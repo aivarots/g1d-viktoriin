@@ -1,4 +1,4 @@
-# G1D viktoriin
+# G1D tunnikontroll
 
 Exit game for G1D maths lessons: QR code → name + nickname → a 5-minute quiz with four options
 per question. Scores go to the teacher's Google Sheet through `kood.gs`; this repo holds only

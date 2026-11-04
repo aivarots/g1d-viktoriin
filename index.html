@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
-<title>G1D viktoriin</title>
+<title>G1D tunnikontroll</title>
 <style>
 /* Tokens. Status colours are the darker, accessible system tints, so white text on them
    passes contrast (green #248A3D 4.6:1, red #D70015 5.3:1). */
@@ -150,8 +150,8 @@ h1{font-size:34px;line-height:1.1;font-weight:700;letter-spacing:-.02em;margin-t
   <section id="start">
     <div class="hero">
       <div class="tile">x²</div>
-      <div class="eyebrow">G1D viktoriin</div>
-      <h1 id="title">Viktoriin</h1>
+      <div class="eyebrow">G1D tunnikontroll</div>
+      <h1 id="title">Tunnikontroll</h1>
       <p class="meta" id="meta">Laen küsimusi…</p>
     </div>
     <div class="group">
@@ -230,7 +230,7 @@ async function load(){
   $("arc").style.strokeDasharray = C;
   const saved = store.get("viktoriin-me") || {};
   $("name").value = saved.name || ""; $("nick").value = saved.nick || "";
-  if (!quizId) { $("meta").textContent = "Viktoriini aadress on vale. Skaneeri QR-kood uuesti."; return; }
+  if (!quizId) { $("meta").textContent = "Tunnikontrolli aadress on vale. Skaneeri QR-kood uuesti."; return; }
   try {
     const r = await fetch("quizzes/" + encodeURIComponent(quizId) + ".json", {cache: "no-store"});
     quiz = await r.json();
@@ -355,7 +355,7 @@ async function save(){
     status("ok", "Tulemus on salvestatud", "Võid tunnist lahkuda.");
     store.set("viktoriin-saved-" + quizId, true);
   } catch(e) {
-    status("bad", "Salvestamine ei õnnestunud", "Näita seda ekraani õpetajale. Tulemus saadetakse uuesti, kui avad viktoriini järgmine kord.");
+    status("bad", "Salvestamine ei õnnestunud", "Näita seda ekraani õpetajale. Tulemus saadetakse uuesti, kui avad tunnikontrolli järgmine kord.");
     $("retry").hidden = false;
     const p = store.get("viktoriin-pending") || [];
     if (!p.some(r => r.lesson === result.lesson && r.name === result.name)) { p.push(result); store.set("viktoriin-pending", p); }
