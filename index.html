@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="et">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>G1D viktoriin</title>
+<style>
+:root{--ink:#1b2a35;--mute:#5b6b75;--bg:#f4f7f8;--card:#fff;--teal:#087e83;--rust:#a3471c;--ok:#1f8a4c;--bad:#c0392b;
+  --a:#e4572e;--b:#2e86ab;--c:#f2a541;--d:#6a4c93}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);
+  display:flex;flex-direction:column;min-height:100%;padding:16px;padding-bottom:max(16px,env(safe-area-inset-bottom))}
+main{width:100%;max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px;flex:1}
+h1{font-size:1.6rem}
+.sub{color:var(--mute)}
+label{display:block;font-weight:600;margin-bottom:4px}
+.hint{font-weight:400;color:var(--mute);font-size:.9rem}
+input{width:100%;font-size:1.1rem;padding:12px;border:2px solid #cfd8dc;border-radius:10px;background:#fff;color:var(--ink)}
+input:focus{outline:none;border-color:var(--teal)}
+button{font:inherit;border:0;border-radius:12px;cursor:pointer}
+.go{background:var(--teal);color:#fff;font-size:1.2rem;font-weight:700;padding:16px}
+.go:disabled{opacity:.45}
+.bar{display:flex;align-items:center;gap:10px;font-weight:700}
+.clock{font-variant-numeric:tabular-nums;font-size:1.5rem;min-width:4.2ch}
+.clock.low{color:var(--bad)}
+.track{flex:1;height:10px;background:#dde5e8;border-radius:5px;overflow:hidden}
+.fill{height:100%;background:var(--teal);transition:width 1s linear}
+.fill.low{background:var(--bad)}
+.score{min-width:5ch;text-align:right}
+.dots{display:flex;gap:6px}
+.dot{flex:1;height:6px;border-radius:3px;background:#dde5e8}
+.dot.ok{background:var(--ok)}.dot.bad{background:var(--bad)}.dot.now{background:var(--ink)}
+.q{background:var(--card);border-radius:14px;padding:18px;font-size:1.25rem;font-weight:600;line-height:1.35;box-shadow:0 1px 3px #0001}
+.opts{display:grid;gap:10px}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;color:#fff;font-size:1.1rem;font-weight:600;padding:14px;min-height:56px}
+.opt b{background:#fff3;border-radius:8px;width:32px;height:32px;display:grid;place-items:center;flex:none}
+.opt:nth-child(1){background:var(--a)}.opt:nth-child(2){background:var(--b)}
+.opt:nth-child(3){background:var(--c);color:#1b2a35}.opt:nth-child(4){background:var(--d)}
+.opt.dim{opacity:.35}.opt.right{outline:4px solid var(--ok);opacity:1}.opt.wrong{outline:4px solid var(--bad)}
+.fb{border-radius:12px;padding:14px;font-size:1.05rem;font-weight:600}
+.fb.ok{background:#e3f4ea;color:var(--ok)}.fb.bad{background:#fbe7e4;color:var(--bad)}
+.fb p{font-weight:400;color:var(--ink);margin-top:6px}
+.big{font-size:3.2rem;font-weight:800;color:var(--teal);text-align:center}
+.center{text-align:center}
+.save{text-align:center;color:var(--mute)}
+.save.ok{color:var(--ok)}.save.bad{color:var(--bad)}
+section{display:flex;flex-direction:column;gap:14px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+  <section id="start">
+    <h1 id="title">Viktoriin</h1>
+    <p class="sub" id="meta">Laen küsimusi…</p>
+    <div style="margin-top:18px">
+      <label for="name">Ees- ja perekonnanimi <span class="hint">(näeb ainult õpetaja)</span></label>
+      <input id="name" autocomplete="name" maxlength="60">
+    </div>
+    <div style="margin-top:12px">
+      <label for="nick">Hüüdnimi <span class="hint">(näevad kõik tabelis)</span></label>
+      <input id="nick" maxlength="20">
+    </div>
+    <button class="go" id="go" style="width:100%;margin-top:18px" disabled>Alusta</button>
+    <p class="sub center" style="margin-top:10px" id="rule"></p>
+  </section>
+
+  <section id="game" hidden>
+    <div class="bar"><span class="clock" id="clock">5:00</span><div class="track"><div class="fill" id="fill"></div></div><span class="score" id="score">0</span></div>
+    <div class="dots" id="dots"></div>
+    <div class="q" id="q"></div>
+    <div class="opts" id="opts"></div>
+    <div class="fb" id="fb" hidden></div>
+    <button class="go" id="next" hidden>Edasi</button>
+  </section>
+
+  <section id="end" hidden>
+    <h1 class="center" id="endTitle">Valmis!</h1>
+    <div class="big" id="endScore">0</div>
+    <p class="center sub" id="endLine"></p>
+    <p class="save" id="save">Salvestan…</p>
+    <button class="go" id="retry" hidden>Proovi uuesti salvestada</button>
+    <p class="center" id="leave" hidden style="font-size:1.2rem;font-weight:700;margin-top:8px">Võid tunnist lahkuda.</p>
+  </section>
+</main>
+<script src="config.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const quizId = new URLSearchParams(location.search).get("q") || "";
+const store = {
+  get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } },
+  set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+};
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+let quiz, order, idx = 0, score = 0, correct = 0, deadline, tick, qStart, done = false, result;
+
+async function send(r){
+  const url = (window.VIKTORIIN || {}).scriptUrl;
+  if (!url) throw new Error("no url");
+  const res = await fetch(url, {method: "POST", body: JSON.stringify(r)});   // text/plain: no preflight
+  const j = await res.json();
+  if (!j.ok) throw new Error(j.error || "rejected");
+  return j;
+}
+async function flushPending(){
+  const p = store.get("viktoriin-pending") || [];
+  const left = [];
+  for (const r of p) { try { await send(r); } catch(e){ left.push(r); } }
+  store.set("viktoriin-pending", left);
+}
+
+async function load(){
+  flushPending();
+  const saved = store.get("viktoriin-me") || {};
+  $("name").value = saved.name || ""; $("nick").value = saved.nick || "";
+  if (!quizId) { $("meta").textContent = "Viktoriini aadress on vale. Skaneeri QR-kood uuesti."; return; }
+  try {
+    const r = await fetch("quizzes/" + encodeURIComponent(quizId) + ".json", {cache: "no-store"});
+    quiz = await r.json();
+  } catch(e) { $("meta").textContent = "Küsimusi ei saanud laadida. Kontrolli internetti ja proovi uuesti."; return; }
+  $("title").textContent = quiz.title;
+  $("meta").textContent = quiz.questions.length + " küsimust, " + quiz.minutes + " minutit.";
+  $("rule").textContent = "Iga õige vastus 100 punkti, kiiruse eest kuni 50 lisaks.";
+  const prev = store.get("viktoriin-done-" + quizId);
+  if (prev) { showEnd(prev, true); return; }
+  const run = store.get("viktoriin-run-" + quizId);       // reloaded mid-game: same questions, same clock
+  if (run) { resume(run); return; }
+  const check = () => { $("go").disabled = !($("name").value.trim().length >= 3 && $("nick").value.trim().length >= 2); };
+  $("name").oninput = $("nick").oninput = check; check();
+}
+
+function start(){
+  const name = $("name").value.trim(), nick = $("nick").value.trim();
+  store.set("viktoriin-me", {name, nick});
+  $("start").hidden = true; $("game").hidden = false;
+  // one version per question (other numbers for the neighbour), then question order shuffled
+  quiz.questions = quiz.questions.map(q => q.variants ? q.variants[Math.floor(Math.random() * q.variants.length)] : q);
+  order = shuffle(quiz.questions.map((q, i) => i));
+  deadline = Date.now() + quiz.minutes * 60000;
+  resume({questions: quiz.questions, order, deadline, idx: 0, score: 0, correct: 0, marks: []});
+}
+
+function persist(marks, at = idx){
+  store.set("viktoriin-run-" + quizId, {questions: quiz.questions, order, deadline, idx: at, score, correct, marks});
+}
+
+function resume(run){
+  quiz.questions = run.questions; order = run.order; deadline = run.deadline;
+  idx = run.idx; score = run.score; correct = run.correct;
+  $("start").hidden = true; $("game").hidden = false;
+  $("dots").innerHTML = order.map((_, i) => '<span class="dot ' + (run.marks[i] || "") + '"></span>').join("");
+  $("score").textContent = score;
+  persist(run.marks);
+  tick = setInterval(clock, 250); clock();
+  if (!done) { if (idx < order.length) show(); else finish(false); }
+}
+
+function clock(){
+  const left = Math.max(0, deadline - Date.now()), s = Math.ceil(left / 1000);
+  $("clock").textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+  const low = s <= 30;
+  $("clock").classList.toggle("low", low); $("fill").classList.toggle("low", low);
+  $("fill").style.width = (100 * left / (quiz.minutes * 60000)) + "%";
+  if (left <= 0) finish(true);
+}
+
+function show(){
+  const q = quiz.questions[order[idx]];
+  [...$("dots").children].forEach((d, i) => { if (i === idx) d.classList.add("now"); });
+  $("q").textContent = q.q;
+  $("fb").hidden = true; $("next").hidden = true;
+  const opts = shuffle(q.options.map((t, i) => i));
+  $("opts").innerHTML = "";
+  opts.forEach((oi, k) => {
+    const b = document.createElement("button");
+    b.className = "opt"; b.dataset.i = oi;
+    b.innerHTML = "<b>" + "ABCD"[k] + "</b><span></span>";
+    b.lastChild.textContent = q.options[oi];
+    b.onclick = () => answer(oi);
+    $("opts").appendChild(b);
+  });
+  qStart = Date.now();
+}
+
+function answer(oi){
+  if (done) return;
+  const q = quiz.questions[order[idx]], ok = oi === 0;
+  const secs = (Date.now() - qStart) / 1000, bonus = ok ? Math.max(0, Math.round(50 - 2 * secs)) : 0;
+  if (ok) { correct++; score += 100 + bonus; }
+  $("score").textContent = score;
+  [...$("opts").children].forEach(b => {
+    const i = +b.dataset.i; b.onclick = null;
+    if (i === 0) b.classList.add("right"); else if (i === oi) b.classList.add("wrong"); else b.classList.add("dim");
+  });
+  $("dots").children[idx].classList.remove("now");
+  $("dots").children[idx].classList.add(ok ? "ok" : "bad");
+  // saved as answered at once, so a reload goes on to the next question instead of replaying this one
+  persist([...$("dots").children].map(d => d.classList.contains("ok") ? "ok" : d.classList.contains("bad") ? "bad" : ""), idx + 1);
+  const fb = $("fb"); fb.hidden = false; fb.className = "fb " + (ok ? "ok" : "bad");
+  fb.textContent = ok ? "Õige! +" + (100 + bonus) : "Vale. Õige vastus on rohelisega.";
+  if (!ok && q.why[oi]) { const p = document.createElement("p"); p.textContent = q.why[oi]; fb.appendChild(p); }
+  $("next").hidden = false;
+  $("next").textContent = idx + 1 < order.length ? "Edasi" : "Vaata tulemust";
+}
+
+function next(){ idx++; if (idx < order.length) show(); else finish(false); }
+
+function finish(timeout){
+  if (done) return; done = true; clearInterval(tick);
+  const me = store.get("viktoriin-me") || {};
+  result = {lesson: quizId, name: me.name, nick: me.nick, score, correct, total: quiz.questions.length,
+            seconds: Math.round((quiz.minutes * 60000 - Math.max(0, deadline - Date.now())) / 1000), timeout};
+  store.set("viktoriin-done-" + quizId, result);
+  try { localStorage.removeItem("viktoriin-run-" + quizId); } catch(e) {}
+  showEnd(result, false);
+}
+
+async function save(){
+  $("save").className = "save"; $("save").textContent = "Salvestan…"; $("retry").hidden = true;
+  try {
+    await send(result);
+    $("save").className = "save ok"; $("save").textContent = "Tulemus on salvestatud ✓";
+    $("leave").hidden = false; store.set("viktoriin-saved-" + quizId, true);
+  } catch(e) {
+    $("save").className = "save bad";
+    $("save").textContent = "Salvestamine ei õnnestunud. Näita seda ekraani õpetajale. Tulemus saadetakse uuesti, kui avad viktoriini järgmine kord.";
+    $("retry").hidden = false;
+    const p = store.get("viktoriin-pending") || [];
+    if (!p.some(r => r.lesson === result.lesson && r.name === result.name)) { p.push(result); store.set("viktoriin-pending", p); }
+  }
+}
+
+function showEnd(r, again){
+  result = r;
+  $("start").hidden = true; $("game").hidden = true; $("end").hidden = false;
+  $("endTitle").textContent = again ? "Oled juba mänginud" : (r.timeout ? "Aeg sai läbi!" : "Valmis!");
+  $("endScore").textContent = r.score;
+  $("endLine").textContent = r.correct + " / " + r.total + " õiget  •  " + r.nick;
+  if (again && store.get("viktoriin-saved-" + quizId)) {
+    $("save").className = "save ok"; $("save").textContent = "Tulemus on salvestatud ✓"; $("leave").hidden = false;
+  } else save();
+}
+
+$("go").onclick = start; $("next").onclick = next; $("retry").onclick = save;
+load();
+</script>
+</body>
+</html>

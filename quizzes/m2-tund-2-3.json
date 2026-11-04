@@ -1,0 +1,301 @@
+{
+ "id": "m2-tund-2-3",
+ "title": "Lineaar- ja ruutvõrrand",
+ "minutes": 5,
+ "questions": [
+  {
+   "variants": [
+    {
+     "q": "Mitu lahendit on võrrandil 3(x − 2) = 3x + 1?",
+     "options": [
+      "lahendid puuduvad",
+      "x = 7",
+      "x = 0",
+      "lõpmata palju"
+     ],
+     "why": [
+      "",
+      "0x = 7 ei anna x = 7: nulliga jagada ei saa.",
+      "0x = 7 ei anna x = 0: ükski x ei sobi.",
+      "Lõpmata palju oleks siis, kui jääks 0 = 0."
+     ]
+    },
+    {
+     "q": "Mitu lahendit on võrrandil 2(x − 5) = 2x + 3?",
+     "options": [
+      "lahendid puuduvad",
+      "x = 13",
+      "x = 0",
+      "lõpmata palju"
+     ],
+     "why": [
+      "",
+      "0x = 13 ei anna x = 13: nulliga jagada ei saa.",
+      "0x = 13 ei anna x = 0: ükski x ei sobi.",
+      "Lõpmata palju oleks siis, kui jääks 0 = 0."
+     ]
+    },
+    {
+     "q": "Mitu lahendit on võrrandil 4(x − 1) = 4x + 2?",
+     "options": [
+      "lahendid puuduvad",
+      "x = 6",
+      "x = 0",
+      "lõpmata palju"
+     ],
+     "why": [
+      "",
+      "0x = 6 ei anna x = 6: nulliga jagada ei saa.",
+      "0x = 6 ei anna x = 0: ükski x ei sobi.",
+      "Lõpmata palju oleks siis, kui jääks 0 = 0."
+     ]
+    }
+   ]
+  },
+  {
+   "variants": [
+    {
+     "q": "Lahendage (x + 1)/3 − (x − 2)/6 = 2.",
+     "options": [
+      "x = 8",
+      "x = 12",
+      "x = −2",
+      "x = 2"
+     ],
+     "why": [
+      "",
+      "Miinus murru ees muudab märgid, −(x − 2) = −x + 2.",
+      "Korruta iga liiget, ka paremat poolt, seega 2 · 6 = 12.",
+      "Kaks viga: miinus murru ees ja parem pool korrutamata."
+     ]
+    },
+    {
+     "q": "Lahendage (x + 2)/3 − (x − 1)/6 = 3.",
+     "options": [
+      "x = 13",
+      "x = 15",
+      "x = −2",
+      "x = 0"
+     ],
+     "why": [
+      "",
+      "Miinus murru ees muudab märgid, −(x − 1) = −x + 1.",
+      "Korruta iga liiget, ka paremat poolt, seega 3 · 6 = 18.",
+      "Kaks viga: miinus murru ees ja parem pool korrutamata."
+     ]
+    },
+    {
+     "q": "Lahendage (x + 1)/3 − (x − 4)/6 = 2.",
+     "options": [
+      "x = 6",
+      "x = 14",
+      "x = −4",
+      "x = 4"
+     ],
+     "why": [
+      "",
+      "Miinus murru ees muudab märgid, −(x − 4) = −x + 4.",
+      "Korruta iga liiget, ka paremat poolt, seega 2 · 6 = 12.",
+      "Kaks viga: miinus murru ees ja parem pool korrutamata."
+     ]
+    }
+   ]
+  },
+  {
+   "variants": [
+    {
+     "q": "x² = 49. Mis on lahendid?",
+     "options": [
+      "x = −7 või x = 7",
+      "ainult x = 7",
+      "x = 24,5",
+      "x = −49 või x = 49"
+     ],
+     "why": [
+      "",
+      "Ka (−7)² = 49.",
+      "x² ei ole 2x. Võta ruutjuur, ära jaga 2-ga.",
+      "Võta ruutjuur, √49 = 7."
+     ]
+    },
+    {
+     "q": "x² = 36. Mis on lahendid?",
+     "options": [
+      "x = −6 või x = 6",
+      "ainult x = 6",
+      "x = 18",
+      "x = −36 või x = 36"
+     ],
+     "why": [
+      "",
+      "Ka (−6)² = 36.",
+      "x² ei ole 2x. Võta ruutjuur, ära jaga 2-ga.",
+      "Võta ruutjuur, √36 = 6."
+     ]
+    },
+    {
+     "q": "x² = 81. Mis on lahendid?",
+     "options": [
+      "x = −9 või x = 9",
+      "ainult x = 9",
+      "x = 40,5",
+      "x = −81 või x = 81"
+     ],
+     "why": [
+      "",
+      "Ka (−9)² = 81.",
+      "x² ei ole 2x. Võta ruutjuur, ära jaga 2-ga.",
+      "Võta ruutjuur, √81 = 9."
+     ]
+    }
+   ]
+  },
+  {
+   "variants": [
+    {
+     "q": "3x² = 12x. Mis on lahendid?",
+     "options": [
+      "x = 0 või x = 4",
+      "ainult x = 4",
+      "x = −2 või x = 2",
+      "x = −4 või x = 0"
+     ],
+     "why": [
+      "",
+      "Jagasid x-ga ja x = 0 kadus. Tõsta x sulgude ette.",
+      "x paremalt kadus: see on teine võrrand.",
+      "Märk on vale. 3x² − 12x = 0, seega 3x(x − 4) = 0."
+     ]
+    },
+    {
+     "q": "2x² = 18x. Mis on lahendid?",
+     "options": [
+      "x = 0 või x = 9",
+      "ainult x = 9",
+      "x = −3 või x = 3",
+      "x = −9 või x = 0"
+     ],
+     "why": [
+      "",
+      "Jagasid x-ga ja x = 0 kadus. Tõsta x sulgude ette.",
+      "x paremalt kadus: see on teine võrrand.",
+      "Märk on vale. 2x² − 18x = 0, seega 2x(x − 9) = 0."
+     ]
+    },
+    {
+     "q": "x² = 16x. Mis on lahendid?",
+     "options": [
+      "x = 0 või x = 16",
+      "ainult x = 16",
+      "x = −4 või x = 4",
+      "x = −16 või x = 0"
+     ],
+     "why": [
+      "",
+      "Jagasid x-ga ja x = 0 kadus. Tõsta x sulgude ette.",
+      "x paremalt kadus: see on teine võrrand.",
+      "Märk on vale. x² − 16x = 0, seega x(x − 16) = 0."
+     ]
+    }
+   ]
+  },
+  {
+   "variants": [
+    {
+     "q": "Arvutage diskriminant D, kui x² − 4x + 5 = 0.",
+     "options": [
+      "D = −4",
+      "D = 36",
+      "D = −36",
+      "D = −16"
+     ],
+     "why": [
+      "",
+      "Valemis on D = b² − 4ac, miinusega.",
+      "(−4)² = 16, mitte −16.",
+      "Ruut ununes. b² = 16, mitte 4."
+     ]
+    },
+    {
+     "q": "Arvutage diskriminant D, kui x² − 6x + 8 = 0.",
+     "options": [
+      "D = 4",
+      "D = 68",
+      "D = −68",
+      "D = −26"
+     ],
+     "why": [
+      "",
+      "Valemis on D = b² − 4ac, miinusega.",
+      "(−6)² = 36, mitte −36.",
+      "Ruut ununes. b² = 36, mitte 6."
+     ]
+    },
+    {
+     "q": "Arvutage diskriminant D, kui x² + 2x − 3 = 0.",
+     "options": [
+      "D = 16",
+      "D = −8",
+      "D = 8",
+      "D = 14"
+     ],
+     "why": [
+      "",
+      "Valemis on D = b² − 4ac, miinusega.",
+      "2² = 4, mitte −4.",
+      "Ruut ununes. b² = 4, mitte 2."
+     ]
+    }
+   ]
+  },
+  {
+   "variants": [
+    {
+     "q": "Lahendage 2x² − 3x − 2 = 0.",
+     "options": [
+      "x = −0,5 või x = 2",
+      "x = −2 või x = 0,5",
+      "x = −1 või x = 4",
+      "lahendid puuduvad"
+     ],
+     "why": [
+      "",
+      "Valemis on −b. Siin b = −3, seega −b = 3.",
+      "Nimetajas on 2a = 4, mitte a.",
+      "D = 25 > 0, sest −4ac = 16."
+     ]
+    },
+    {
+     "q": "Lahendage 2x² − x − 3 = 0.",
+     "options": [
+      "x = −1 või x = 1,5",
+      "x = −1,5 või x = 1",
+      "x = −2 või x = 3",
+      "lahendid puuduvad"
+     ],
+     "why": [
+      "",
+      "Valemis on −b. Siin b = −1, seega −b = 1.",
+      "Nimetajas on 2a = 4, mitte a.",
+      "D = 25 > 0, sest −4ac = 24."
+     ]
+    },
+    {
+     "q": "Lahendage 2x² + x − 6 = 0.",
+     "options": [
+      "x = −2 või x = 1,5",
+      "x = −1,5 või x = 2",
+      "x = −4 või x = 3",
+      "lahendid puuduvad"
+     ],
+     "why": [
+      "",
+      "Valemis on −b. Siin b = 1, seega −b = −1.",
+      "Nimetajas on 2a = 4, mitte a.",
+      "D = 49 > 0, sest −4ac = 48."
+     ]
+    }
+   ]
+  }
+ ]
+}
