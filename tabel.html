@@ -14,18 +14,18 @@
 *{box-sizing:border-box;margin:0}
 html,body{height:100%}
 body{font-family:var(--font);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;
-  display:grid;grid-template-columns:minmax(340px,36%) 1fr;gap:3vw;padding:3.2vw}
+  display:grid;grid-template-columns:minmax(380px,46%) 1fr;gap:2.4vw;padding:2.4vw}
 @media (max-width:800px){body{grid-template-columns:1fr;padding:16px;gap:20px;height:auto}}
-.join{background:var(--card);border-radius:28px;box-shadow:var(--shadow);padding:2.6vw 2vw;
+.join{background:var(--card);border-radius:28px;box-shadow:var(--shadow);padding:2vh 2vw;
   display:flex;flex-direction:column;align-items:center;justify-content:space-between;text-align:center;gap:1.6vh;min-height:0}
 .eyebrow{font-size:clamp(13px,1vw,18px);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
 h1{font-size:clamp(26px,2.4vw,44px);font-weight:700;letter-spacing:-.02em;line-height:1.1;margin-top:.4vh}
-#qr{width:min(24vw,40vh);aspect-ratio:1}
+#qr{width:min(38vw,58vh);aspect-ratio:1}
 #qr img,#qr canvas{width:100%!important;height:100%!important;display:block;image-rendering:pixelated}
-.scan{font-size:clamp(16px,1.3vw,24px);color:var(--mute)}
+.scan{font-size:clamp(18px,1.6vw,30px);color:var(--mute)}
 .scan b{color:var(--ink)}
 .timer{display:flex;align-items:center;gap:1.2vw}
-.ring{position:relative;width:clamp(90px,7.5vw,140px);aspect-ratio:1}
+.ring{position:relative;width:clamp(80px,12vh,140px);aspect-ratio:1}
 .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
 .ring circle{fill:none;stroke-width:7}
 .ring .bgc{stroke:var(--fill)}
