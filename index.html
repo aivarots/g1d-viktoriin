@@ -244,6 +244,11 @@ async function load(){
   try {
     const r = await fetch("quizzes/" + encodeURIComponent(quizId) + ".json", {cache: "no-store"});
     quiz = await r.json();
+    if (quiz.data) {                                   // scrambled file (the published one): see viktoriin_*.py
+      const key = new TextEncoder().encode("tunnikontroll:" + quiz.id);
+      const raw = Uint8Array.from(atob(quiz.data), c => c.charCodeAt(0)).map((b, i) => b ^ key[i % key.length]);
+      quiz.questions = JSON.parse(new TextDecoder().decode(raw));
+    }
   } catch(e) { $("meta").textContent = "Küsimusi ei saanud laadida. Kontrolli internetti ja proovi uuesti."; return; }
   $("title").textContent = quiz.title;
   $("meta").textContent = quiz.questions.length + " küsimust · " + quiz.minutes + " minutit";
