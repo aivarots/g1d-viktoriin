@@ -3,87 +3,200 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <title>G1D viktoriin</title>
 <style>
-:root{--ink:#1b2a35;--mute:#5b6b75;--bg:#f4f7f8;--card:#fff;--teal:#087e83;--rust:#a3471c;--ok:#1f8a4c;--bad:#c0392b;
-  --a:#e4572e;--b:#2e86ab;--c:#f2a541;--d:#6a4c93}
-*{box-sizing:border-box;margin:0}
-html,body{height:100%}
-body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);
-  display:flex;flex-direction:column;min-height:100%;padding:16px;padding-bottom:max(16px,env(safe-area-inset-bottom))}
-main{width:100%;max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px;flex:1}
-h1{font-size:1.6rem}
-.sub{color:var(--mute)}
-label{display:block;font-weight:600;margin-bottom:4px}
-.hint{font-weight:400;color:var(--mute);font-size:.9rem}
-input{width:100%;font-size:1.1rem;padding:12px;border:2px solid #cfd8dc;border-radius:10px;background:#fff;color:var(--ink)}
-input:focus{outline:none;border-color:var(--teal)}
-button{font:inherit;border:0;border-radius:12px;cursor:pointer}
-.go{background:var(--teal);color:#fff;font-size:1.2rem;font-weight:700;padding:16px}
-.go:disabled{opacity:.45}
-.bar{display:flex;align-items:center;gap:10px;font-weight:700}
-.clock{font-variant-numeric:tabular-nums;font-size:1.5rem;min-width:4.2ch}
-.clock.low{color:var(--bad)}
-.track{flex:1;height:10px;background:#dde5e8;border-radius:5px;overflow:hidden}
-.fill{height:100%;background:var(--teal);transition:width 1s linear}
-.fill.low{background:var(--bad)}
-.score{min-width:5ch;text-align:right}
-.dots{display:flex;gap:6px}
-.dot{flex:1;height:6px;border-radius:3px;background:#dde5e8}
-.dot.ok{background:var(--ok)}.dot.bad{background:var(--bad)}.dot.now{background:var(--ink)}
-.q{background:var(--card);border-radius:14px;padding:18px;font-size:1.25rem;font-weight:600;line-height:1.35;box-shadow:0 1px 3px #0001}
-.opts{display:grid;gap:10px}
-.opt{display:flex;align-items:center;gap:12px;text-align:left;color:#fff;font-size:1.1rem;font-weight:600;padding:14px;min-height:56px}
-.opt b{background:#fff3;border-radius:8px;width:32px;height:32px;display:grid;place-items:center;flex:none}
-.opt:nth-child(1){background:var(--a)}.opt:nth-child(2){background:var(--b)}
-.opt:nth-child(3){background:var(--c);color:#1b2a35}.opt:nth-child(4){background:var(--d)}
-.opt.dim{opacity:.35}.opt.right{outline:4px solid var(--ok);opacity:1}.opt.wrong{outline:4px solid var(--bad)}
-.fb{border-radius:12px;padding:14px;font-size:1.05rem;font-weight:600}
-.fb.ok{background:#e3f4ea;color:var(--ok)}.fb.bad{background:#fbe7e4;color:var(--bad)}
-.fb p{font-weight:400;color:var(--ink);margin-top:6px}
-.big{font-size:3.2rem;font-weight:800;color:var(--teal);text-align:center}
-.center{text-align:center}
-.save{text-align:center;color:var(--mute)}
-.save.ok{color:var(--ok)}.save.bad{color:var(--bad)}
-section{display:flex;flex-direction:column;gap:14px}
+/* Tokens. Status colours are the darker, accessible system tints, so white text on them
+   passes contrast (green #248A3D 4.6:1, red #D70015 5.3:1). */
+:root{
+  --bg:#f2f2f7; --card:#fff; --ink:#1c1c1e; --ink2:#3a3a3c; --mute:#6e6e73; --hair:rgba(60,60,67,.18);
+  --fill:rgba(120,120,128,.12); --accent:#087e83; --accent-ink:#fff;
+  --ok:#248a3d; --ok-soft:#e6f4ea; --bad:#d70015; --bad-soft:#fde8ea; --warn:#c93400;
+  --k1:#0a84ff; --k2:#bf5af2; --k3:#ff9f0a; --k4:#ff375f;
+  --radius:18px; --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06);
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --round:"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{--bg:#000; --card:#1c1c1e; --ink:#f5f5f7; --ink2:#d1d1d6; --mute:#98989d; --hair:rgba(84,84,88,.6);
+    --fill:rgba(118,118,128,.24); --accent:#2ab3b8; --accent-ink:#00191a;
+    --ok:#30a14e; --ok-soft:rgba(48,209,88,.16); --bad:#e5323f; --bad-soft:rgba(255,69,58,.16); --warn:#ff9f0a;
+    --shadow:none}
+}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);min-height:100dvh;
+  -webkit-font-smoothing:antialiased;font-size:17px;line-height:1.35}
+main{max-width:520px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;
+  padding:max(16px,env(safe-area-inset-top)) 16px max(20px,env(safe-area-inset-bottom))}
+section{display:flex;flex-direction:column;flex:1}
 [hidden]{display:none!important}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.primary{background:var(--accent);color:var(--accent-ink);font-weight:600;font-size:17px;height:54px;
+  border-radius:14px;width:100%;transition:transform .12s,opacity .2s}
+.primary:active{transform:scale(.98)}
+.primary:disabled{opacity:.35}
+.secondary{background:var(--fill);color:var(--accent);font-weight:600;height:50px;border-radius:14px;width:100%}
+
+/* start */
+.hero{padding:28px 4px 22px}
+.tile{width:64px;height:64px;border-radius:16px;display:grid;place-items:center;margin-bottom:18px;
+  background:linear-gradient(135deg,#0fa3a8,#065f63);color:#fff;font:700 26px/1 var(--round);
+  box-shadow:0 6px 16px rgba(8,126,131,.35)}
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+h1{font-size:34px;line-height:1.1;font-weight:700;letter-spacing:-.02em;margin-top:4px}
+.meta{color:var(--mute);margin-top:8px}
+.group{background:var(--card);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.field{display:block;padding:12px 16px 12px}
+.field+.field{border-top:.5px solid var(--hair);margin-left:16px;padding-left:0}
+.field span{display:block;font-size:13px;color:var(--mute);margin-bottom:2px}
+.field input{width:100%;border:0;outline:0;background:transparent;font:inherit;font-size:17px;color:var(--ink);padding:2px 0}
+.foot{font-size:13px;color:var(--mute);padding:8px 16px 0}
+.spacer{flex:1;min-height:24px}
+
+/* game */
+.top{display:flex;align-items:center;gap:14px;padding:4px 2px 14px}
+.ring{position:relative;width:58px;height:58px;flex:none}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:5}
+.ring .bgc{stroke:var(--fill)}
+.ring .fgc{stroke:var(--accent);stroke-linecap:round;transition:stroke-dashoffset .25s linear,stroke .3s}
+.ring.warn .fgc{stroke:var(--warn)}.ring.low .fgc{stroke:var(--bad)}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font:600 15px/1 var(--font);font-variant-numeric:tabular-nums}
+.ring.low b{color:var(--bad)}
+.steps{flex:1;display:flex;gap:5px}
+.step{flex:1;height:6px;border-radius:3px;background:var(--fill);transition:background .3s}
+.step.now{background:var(--ink2)}
+.step.ok{background:var(--ok)}.step.bad{background:var(--bad)}
+.pts{min-width:62px;text-align:right}
+.pts small{display:block;font-size:11px;color:var(--mute);font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.pts b{font:700 22px/1.1 var(--round);font-variant-numeric:tabular-nums}
+.pts b.bump{animation:bump .4s}
+@keyframes bump{40%{transform:scale(1.18)}}
+.qcard{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px 20px 24px;margin-bottom:14px}
+.qnum{font-size:13px;font-weight:600;color:var(--mute)}
+.qtext{font-size:22px;line-height:1.3;font-weight:600;letter-spacing:-.01em;margin-top:6px}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;align-items:center;gap:14px;width:100%;min-height:60px;padding:12px 16px;text-align:left;
+  background:var(--card);border-radius:16px;box-shadow:var(--shadow);font-size:18px;font-weight:500;
+  transition:transform .12s,background .25s,color .25s,opacity .25s}
+.opt:active{transform:scale(.985)}
+.key{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;
+  font:700 15px/1 var(--round);color:#fff}
+.opt:nth-child(1) .key{background:var(--k1)}.opt:nth-child(2) .key{background:var(--k2)}
+.opt:nth-child(3) .key{background:var(--k3)}.opt:nth-child(4) .key{background:var(--k4)}
+.txt{flex:1}
+.mark{flex:none;width:28px;height:28px;display:none}
+.opt.is-ok{background:var(--ok);color:#fff}
+.opt.is-bad{background:var(--bad);color:#fff}
+.opt.is-ok .key,.opt.is-bad .key{background:rgba(255,255,255,.22)}
+.opt.is-ok .mark,.opt.is-bad .mark{display:block}
+.opt.is-dim{opacity:.38}
+.opt.is-ok.picked{animation:pop .35s}
+.opt.is-bad{animation:shake .35s}
+@keyframes pop{50%{transform:scale(1.03)}}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* feedback sheet */
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:5;padding:0 12px max(12px,env(safe-area-inset-bottom));
+  transform:translateY(110%);transition:transform .32s cubic-bezier(.2,.8,.2,1)}
+.sheet.show{transform:none}
+.sheet>div{max-width:520px;margin:0 auto;background:color-mix(in srgb,var(--card) 88%,transparent);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
+  border-radius:22px;padding:18px 18px 16px;box-shadow:0 -4px 30px rgba(0,0,0,.12)}
+.verdict{display:flex;align-items:center;gap:10px;font:700 22px/1.2 var(--round)}
+.verdict i{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;flex:none}
+.verdict i svg{width:18px;height:18px}
+.sheet.ok .verdict{color:var(--ok)}.sheet.ok .verdict i{background:var(--ok)}
+.sheet.bad .verdict{color:var(--bad)}.sheet.bad .verdict i{background:var(--bad)}
+.verdict em{font-style:normal;margin-left:auto;font-size:17px;color:var(--ok)}
+.why{color:var(--ink2);margin:8px 0 2px;font-size:16px}
+.sheet .primary{margin-top:14px}
+.pad{height:190px;flex:none}
+
+/* end */
+.result{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px 4px}
+.badge{width:88px;height:88px;border-radius:50%;display:grid;place-items:center;margin-bottom:18px;
+  background:linear-gradient(135deg,#0fa3a8,#065f63);box-shadow:0 10px 26px rgba(8,126,131,.35)}
+.badge svg{width:44px;height:44px}
+.result h1{font-size:30px}
+.big{font:800 72px/1 var(--round);letter-spacing:-.03em;margin-top:14px;font-variant-numeric:tabular-nums;color:var(--accent)}
+.big+small{color:var(--mute);font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-top:4px}
+.chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.chip{background:var(--card);box-shadow:var(--shadow);border-radius:999px;padding:8px 14px;font-size:15px;font-weight:600}
+.status{width:100%;border-radius:16px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start;text-align:left;font-size:16px}
+.status i{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;margin-top:1px}
+.status i svg{width:14px;height:14px}
+.status.wait{background:var(--fill);color:var(--mute)}
+.status.ok{background:var(--ok-soft);color:var(--ok)}.status.ok i{background:var(--ok)}
+.status.bad{background:var(--bad-soft);color:var(--bad)}.status.bad i{background:var(--bad)}
+.status b{display:block;font-size:17px}
+.status span{color:var(--ink2)}
+.spin{width:20px;height:20px;border-radius:50%;border:2.5px solid var(--hair);border-top-color:var(--mute);animation:spin .8s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.endbtn{display:flex;flex-direction:column;gap:10px;margin-top:12px;width:100%}
+.err{color:var(--bad);margin-top:12px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-ok" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-bad" viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2.8l2.75 5.6 6.15.9-4.45 4.33 1.05 6.12L12 16.87l-5.5 2.88 1.05-6.12L3.1 9.3l6.15-.9z" fill="#fff" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/></symbol>
+</svg>
 <main>
   <section id="start">
-    <h1 id="title">Viktoriin</h1>
-    <p class="sub" id="meta">Laen küsimusi…</p>
-    <div style="margin-top:18px">
-      <label for="name">Ees- ja perekonnanimi <span class="hint">(näeb ainult õpetaja)</span></label>
-      <input id="name" autocomplete="name" maxlength="60">
+    <div class="hero">
+      <div class="tile">x²</div>
+      <div class="eyebrow">G1D viktoriin</div>
+      <h1 id="title">Viktoriin</h1>
+      <p class="meta" id="meta">Laen küsimusi…</p>
     </div>
-    <div style="margin-top:12px">
-      <label for="nick">Hüüdnimi <span class="hint">(näevad kõik tabelis)</span></label>
-      <input id="nick" maxlength="20">
+    <div class="group">
+      <label class="field"><span>Ees- ja perekonnanimi · näeb ainult õpetaja</span>
+        <input id="name" autocomplete="name" autocapitalize="words" maxlength="60"></label>
+      <label class="field"><span>Hüüdnimi · näevad kõik tabelis</span>
+        <input id="nick" autocomplete="off" maxlength="20"></label>
     </div>
-    <button class="go" id="go" style="width:100%;margin-top:18px" disabled>Alusta</button>
-    <p class="sub center" style="margin-top:10px" id="rule"></p>
+    <p class="foot" id="rule"></p>
+    <div class="spacer"></div>
+    <button class="primary" id="go" disabled>Alusta</button>
   </section>
 
   <section id="game" hidden>
-    <div class="bar"><span class="clock" id="clock">5:00</span><div class="track"><div class="fill" id="fill"></div></div><span class="score" id="score">0</span></div>
-    <div class="dots" id="dots"></div>
-    <div class="q" id="q"></div>
+    <div class="top">
+      <div class="ring" id="ring">
+        <svg viewBox="0 0 58 58"><circle class="bgc" cx="29" cy="29" r="25"/><circle class="fgc" id="arc" cx="29" cy="29" r="25"/></svg>
+        <b id="clock">5:00</b>
+      </div>
+      <div class="steps" id="steps"></div>
+      <div class="pts"><small>Punktid</small><b id="score">0</b></div>
+    </div>
+    <div class="qcard"><div class="qnum" id="qnum"></div><div class="qtext" id="q"></div></div>
     <div class="opts" id="opts"></div>
-    <div class="fb" id="fb" hidden></div>
-    <button class="go" id="next" hidden>Edasi</button>
+    <div class="pad"></div>
   </section>
 
   <section id="end" hidden>
-    <h1 class="center" id="endTitle">Valmis!</h1>
-    <div class="big" id="endScore">0</div>
-    <p class="center sub" id="endLine"></p>
-    <p class="save" id="save">Salvestan…</p>
-    <button class="go" id="retry" hidden>Proovi uuesti salvestada</button>
-    <p class="center" id="leave" hidden style="font-size:1.2rem;font-weight:700;margin-top:8px">Võid tunnist lahkuda.</p>
+    <div class="result">
+      <div class="badge"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg></div>
+      <h1 id="endTitle">Valmis!</h1>
+      <div class="big" id="endScore">0</div><small>punkti</small>
+      <div class="chips"><span class="chip" id="chipOk"></span><span class="chip" id="chipNick"></span></div>
+    </div>
+    <div class="status wait" id="status"><div class="spin"></div><div><b>Salvestan…</b></div></div>
+    <div class="endbtn"><button class="secondary" id="retry" hidden>Proovi uuesti salvestada</button></div>
   </section>
 </main>
+
+<div class="sheet" id="sheet"><div>
+  <div class="verdict"><i id="vIcon"></i><span id="vText"></span><em id="vPts"></em></div>
+  <p class="why" id="why" hidden></p>
+  <button class="primary" id="next">Jätka</button>
+</div></div>
+
 <script src="config.js"></script>
 <script>
 const $ = id => document.getElementById(id);
@@ -93,6 +206,8 @@ const store = {
   set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
 };
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const icon = (id) => '<svg viewBox="0 0 24 24"><use href="#' + id + '"/></svg>';
+const C = 2 * Math.PI * 25;                                   // timer ring circumference
 let quiz, order, idx = 0, score = 0, correct = 0, deadline, tick, qStart, done = false, result;
 
 async function send(r){
@@ -112,6 +227,7 @@ async function flushPending(){
 
 async function load(){
   flushPending();
+  $("arc").style.strokeDasharray = C;
   const saved = store.get("viktoriin-me") || {};
   $("name").value = saved.name || ""; $("nick").value = saved.nick || "";
   if (!quizId) { $("meta").textContent = "Viktoriini aadress on vale. Skaneeri QR-kood uuesti."; return; }
@@ -120,8 +236,8 @@ async function load(){
     quiz = await r.json();
   } catch(e) { $("meta").textContent = "Küsimusi ei saanud laadida. Kontrolli internetti ja proovi uuesti."; return; }
   $("title").textContent = quiz.title;
-  $("meta").textContent = quiz.questions.length + " küsimust, " + quiz.minutes + " minutit.";
-  $("rule").textContent = "Iga õige vastus 100 punkti, kiiruse eest kuni 50 lisaks.";
+  $("meta").textContent = quiz.questions.length + " küsimust · " + quiz.minutes + " minutit";
+  $("rule").textContent = "Õige vastus annab 100 punkti, kiirus kuni 50 lisaks.";
   const prev = store.get("viktoriin-done-" + quizId);
   if (prev) { showEnd(prev, true); return; }
   const run = store.get("viktoriin-run-" + quizId);       // reloaded mid-game: same questions, same clock
@@ -133,7 +249,6 @@ async function load(){
 function start(){
   const name = $("name").value.trim(), nick = $("nick").value.trim();
   store.set("viktoriin-me", {name, nick});
-  $("start").hidden = true; $("game").hidden = false;
   // one version per question (other numbers for the neighbour), then question order shuffled
   quiz.questions = quiz.questions.map(q => q.variants ? q.variants[Math.floor(Math.random() * q.variants.length)] : q);
   order = shuffle(quiz.questions.map((q, i) => i));
@@ -144,12 +259,13 @@ function start(){
 function persist(marks, at = idx){
   store.set("viktoriin-run-" + quizId, {questions: quiz.questions, order, deadline, idx: at, score, correct, marks});
 }
+const marksNow = () => [...$("steps").children].map(d => d.classList.contains("ok") ? "ok" : d.classList.contains("bad") ? "bad" : "");
 
 function resume(run){
   quiz.questions = run.questions; order = run.order; deadline = run.deadline;
   idx = run.idx; score = run.score; correct = run.correct;
   $("start").hidden = true; $("game").hidden = false;
-  $("dots").innerHTML = order.map((_, i) => '<span class="dot ' + (run.marks[i] || "") + '"></span>').join("");
+  $("steps").innerHTML = order.map((_, i) => '<span class="step ' + (run.marks[i] || "") + '"></span>').join("");
   $("score").textContent = score;
   persist(run.marks);
   tick = setInterval(clock, 250); clock();
@@ -157,29 +273,30 @@ function resume(run){
 }
 
 function clock(){
-  const left = Math.max(0, deadline - Date.now()), s = Math.ceil(left / 1000);
+  const total = quiz.minutes * 60000, left = Math.max(0, deadline - Date.now()), s = Math.ceil(left / 1000);
   $("clock").textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
-  const low = s <= 30;
-  $("clock").classList.toggle("low", low); $("fill").classList.toggle("low", low);
-  $("fill").style.width = (100 * left / (quiz.minutes * 60000)) + "%";
+  $("arc").style.strokeDashoffset = C * (1 - left / total);
+  $("ring").classList.toggle("warn", s <= 60 && s > 30);
+  $("ring").classList.toggle("low", s <= 30);
   if (left <= 0) finish(true);
 }
 
 function show(){
   const q = quiz.questions[order[idx]];
-  [...$("dots").children].forEach((d, i) => { if (i === idx) d.classList.add("now"); });
+  [...$("steps").children].forEach((d, i) => d.classList.toggle("now", i === idx));
+  $("qnum").textContent = "Küsimus " + (idx + 1) + " / " + order.length;
   $("q").textContent = q.q;
-  $("fb").hidden = true; $("next").hidden = true;
-  const opts = shuffle(q.options.map((t, i) => i));
+  $("sheet").classList.remove("show");
   $("opts").innerHTML = "";
-  opts.forEach((oi, k) => {
+  shuffle(q.options.map((t, i) => i)).forEach((oi, k) => {
     const b = document.createElement("button");
     b.className = "opt"; b.dataset.i = oi;
-    b.innerHTML = "<b>" + "ABCD"[k] + "</b><span></span>";
-    b.lastChild.textContent = q.options[oi];
+    b.innerHTML = '<span class="key">' + "ABCD"[k] + '</span><span class="txt"></span><span class="mark"></span>';
+    b.querySelector(".txt").textContent = q.options[oi];
     b.onclick = () => answer(oi);
     $("opts").appendChild(b);
   });
+  window.scrollTo({top: 0});
   qStart = Date.now();
 }
 
@@ -187,27 +304,36 @@ function answer(oi){
   if (done) return;
   const q = quiz.questions[order[idx]], ok = oi === 0;
   const secs = (Date.now() - qStart) / 1000, bonus = ok ? Math.max(0, Math.round(50 - 2 * secs)) : 0;
-  if (ok) { correct++; score += 100 + bonus; }
+  if (ok) { correct++; score += 100 + bonus; $("score").classList.remove("bump"); void $("score").offsetWidth; $("score").classList.add("bump"); }
   $("score").textContent = score;
   [...$("opts").children].forEach(b => {
     const i = +b.dataset.i; b.onclick = null;
-    if (i === 0) b.classList.add("right"); else if (i === oi) b.classList.add("wrong"); else b.classList.add("dim");
+    if (i === 0) { b.classList.add("is-ok"); b.querySelector(".mark").innerHTML = icon("i-ok"); if (ok) b.classList.add("picked"); }
+    else if (i === oi) { b.classList.add("is-bad"); b.querySelector(".mark").innerHTML = icon("i-bad"); }
+    else b.classList.add("is-dim");
   });
-  $("dots").children[idx].classList.remove("now");
-  $("dots").children[idx].classList.add(ok ? "ok" : "bad");
+  const st = $("steps").children[idx];
+  st.classList.remove("now"); st.classList.add(ok ? "ok" : "bad");
   // saved as answered at once, so a reload goes on to the next question instead of replaying this one
-  persist([...$("dots").children].map(d => d.classList.contains("ok") ? "ok" : d.classList.contains("bad") ? "bad" : ""), idx + 1);
-  const fb = $("fb"); fb.hidden = false; fb.className = "fb " + (ok ? "ok" : "bad");
-  fb.textContent = ok ? "Õige! +" + (100 + bonus) : "Vale. Õige vastus on rohelisega.";
-  if (!ok && q.why[oi]) { const p = document.createElement("p"); p.textContent = q.why[oi]; fb.appendChild(p); }
-  $("next").hidden = false;
-  $("next").textContent = idx + 1 < order.length ? "Edasi" : "Vaata tulemust";
+  persist(marksNow(), idx + 1);
+  if (navigator.vibrate) navigator.vibrate(ok ? 15 : [30, 40, 30]);
+  const sh = $("sheet");
+  sh.className = "sheet " + (ok ? "ok" : "bad");
+  $("vIcon").innerHTML = icon(ok ? "i-ok" : "i-bad");
+  $("vText").textContent = ok ? "Õige!" : "Vale";
+  $("vPts").textContent = ok ? "+" + (100 + bonus) : "";
+  const why = ok ? "" : (q.why[oi] || "Õige vastus on rohelisega.");
+  $("why").hidden = !why; $("why").textContent = why;
+  $("next").textContent = idx + 1 < order.length ? "Jätka" : "Vaata tulemust";
+  const at = idx;
+  requestAnimationFrame(() => { if (!done && idx === at) sh.classList.add("show"); });   // not after Jätka or the end
 }
 
-function next(){ idx++; if (idx < order.length) show(); else finish(false); }
+function next(){ $("sheet").classList.remove("show"); idx++; if (idx < order.length) show(); else finish(false); }
 
 function finish(timeout){
   if (done) return; done = true; clearInterval(tick);
+  $("sheet").classList.remove("show");
   const me = store.get("viktoriin-me") || {};
   result = {lesson: quizId, name: me.name, nick: me.nick, score, correct, total: quiz.questions.length,
             seconds: Math.round((quiz.minutes * 60000 - Math.max(0, deadline - Date.now())) / 1000), timeout};
@@ -216,30 +342,41 @@ function finish(timeout){
   showEnd(result, false);
 }
 
+function status(kind, title, text){
+  const s = $("status"); s.className = "status " + kind;
+  s.innerHTML = (kind === "wait" ? '<div class="spin"></div>' : '<i>' + icon(kind === "ok" ? "i-ok" : "i-bad") + '</i>') + '<div><b></b><span></span></div>';
+  s.querySelector("b").textContent = title; s.querySelector("span").textContent = text || "";
+}
+
 async function save(){
-  $("save").className = "save"; $("save").textContent = "Salvestan…"; $("retry").hidden = true;
+  status("wait", "Salvestan…"); $("retry").hidden = true;
   try {
     await send(result);
-    $("save").className = "save ok"; $("save").textContent = "Tulemus on salvestatud ✓";
-    $("leave").hidden = false; store.set("viktoriin-saved-" + quizId, true);
+    status("ok", "Tulemus on salvestatud", "Võid tunnist lahkuda.");
+    store.set("viktoriin-saved-" + quizId, true);
   } catch(e) {
-    $("save").className = "save bad";
-    $("save").textContent = "Salvestamine ei õnnestunud. Näita seda ekraani õpetajale. Tulemus saadetakse uuesti, kui avad viktoriini järgmine kord.";
+    status("bad", "Salvestamine ei õnnestunud", "Näita seda ekraani õpetajale. Tulemus saadetakse uuesti, kui avad viktoriini järgmine kord.");
     $("retry").hidden = false;
     const p = store.get("viktoriin-pending") || [];
     if (!p.some(r => r.lesson === result.lesson && r.name === result.name)) { p.push(result); store.set("viktoriin-pending", p); }
   }
 }
 
+function countUp(el, to){
+  const t0 = performance.now(), dur = 900;
+  const f = t => { const k = Math.min(1, (t - t0) / dur); el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(f); };
+  requestAnimationFrame(f);
+}
+
 function showEnd(r, again){
   result = r;
   $("start").hidden = true; $("game").hidden = true; $("end").hidden = false;
-  $("endTitle").textContent = again ? "Oled juba mänginud" : (r.timeout ? "Aeg sai läbi!" : "Valmis!");
-  $("endScore").textContent = r.score;
-  $("endLine").textContent = r.correct + " / " + r.total + " õiget  •  " + r.nick;
-  if (again && store.get("viktoriin-saved-" + quizId)) {
-    $("save").className = "save ok"; $("save").textContent = "Tulemus on salvestatud ✓"; $("leave").hidden = false;
-  } else save();
+  $("endTitle").textContent = again ? "Oled juba mänginud" : (r.timeout ? "Aeg sai läbi" : "Valmis!");
+  if (again) $("endScore").textContent = r.score; else countUp($("endScore"), r.score);
+  $("chipOk").textContent = r.correct + " / " + r.total + " õiget";
+  $("chipNick").textContent = r.nick;
+  if (again && store.get("viktoriin-saved-" + quizId)) status("ok", "Tulemus on salvestatud", "Võid tunnist lahkuda.");
+  else save();
 }
 
 $("go").onclick = start; $("next").onclick = next; $("retry").onclick = save;

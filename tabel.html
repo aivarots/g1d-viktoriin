@@ -5,41 +5,74 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>G1D viktoriin — tabel</title>
 <style>
-:root{--ink:#1b2a35;--mute:#5b6b75;--bg:#f4f7f8;--teal:#087e83;--gold:#f2a541}
+/* Projector page: light, large, readable from the back row. Same tokens as the game. */
+:root{--bg:#f2f2f7;--card:#fff;--ink:#1c1c1e;--mute:#6e6e73;--fill:rgba(120,120,128,.12);
+  --accent:#087e83;--warn:#c93400;--bad:#d70015;--gold:#d4a017;--silver:#9a9aa1;--bronze:#b0703c;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 10px 30px rgba(0,0,0,.07);
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --round:"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
 *{box-sizing:border-box;margin:0}
-body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);
-  min-height:100vh;display:grid;grid-template-columns:minmax(320px,38%) 1fr;gap:40px;padding:40px}
-@media (max-width:800px){body{grid-template-columns:1fr;padding:16px;gap:20px}}
-.join{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
-h1{font-size:2.4rem}
-#qr{background:#fff;padding:18px;border-radius:16px;box-shadow:0 2px 8px #0002}
-#qr img,#qr canvas{display:block;width:min(30vw,48vh)!important;height:auto!important}
-@media (max-width:800px){#qr img,#qr canvas{width:70vw!important}}
-.url{color:var(--mute);font-size:1.1rem;word-break:break-all}
-.clock{font-size:3.4rem;font-weight:800;font-variant-numeric:tabular-nums;color:var(--teal)}
-.board h2{font-size:1.8rem;margin-bottom:6px}
-.sub{color:var(--mute);font-size:1.2rem;margin-bottom:16px}
-ol{list-style:none;padding:0;display:grid;gap:8px}
-li{display:flex;align-items:center;gap:14px;background:#fff;border-radius:12px;padding:12px 18px;font-size:1.6rem;font-weight:700}
-li .r{width:2.2ch;color:var(--mute)}
-li .n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-li .s{font-variant-numeric:tabular-nums;color:var(--teal)}
-li:nth-child(1) .r{color:var(--gold)}
-button{font:inherit;font-size:1.2rem;font-weight:700;padding:12px 22px;border:0;border-radius:12px;background:var(--teal);color:#fff;cursor:pointer}
+html,body{height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;
+  display:grid;grid-template-columns:minmax(340px,36%) 1fr;gap:3vw;padding:3.2vw}
+@media (max-width:800px){body{grid-template-columns:1fr;padding:16px;gap:20px;height:auto}}
+.join{background:var(--card);border-radius:28px;box-shadow:var(--shadow);padding:2.6vw 2vw;
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;text-align:center;gap:1.6vh;min-height:0}
+.eyebrow{font-size:clamp(13px,1vw,18px);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+h1{font-size:clamp(26px,2.4vw,44px);font-weight:700;letter-spacing:-.02em;line-height:1.1;margin-top:.4vh}
+#qr{width:min(24vw,40vh);aspect-ratio:1}
+#qr img,#qr canvas{width:100%!important;height:100%!important;display:block;image-rendering:pixelated}
+.scan{font-size:clamp(16px,1.3vw,24px);color:var(--mute)}
+.scan b{color:var(--ink)}
+.timer{display:flex;align-items:center;gap:1.2vw}
+.ring{position:relative;width:clamp(90px,7.5vw,140px);aspect-ratio:1}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:7}
+.ring .bgc{stroke:var(--fill)}
+.ring .fgc{stroke:var(--accent);stroke-linecap:round;transition:stroke-dashoffset .25s linear,stroke .3s}
+.ring.warn .fgc{stroke:var(--warn)}.ring.low .fgc{stroke:var(--bad)}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font:700 clamp(22px,1.9vw,36px)/1 var(--round);font-variant-numeric:tabular-nums}
+.ring.low b{color:var(--bad)}
+button{font:600 clamp(16px,1.2vw,22px)/1 var(--font);border:0;border-radius:14px;padding:.9em 1.4em;cursor:pointer;
+  background:var(--accent);color:#fff}
+button.ghost{background:var(--fill);color:var(--accent)}
+.board{display:flex;flex-direction:column;min-height:0}
+.head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:2vh}
+.head h2{font-size:clamp(28px,2.6vw,48px);font-weight:700;letter-spacing:-.02em}
+.count{font-size:clamp(18px,1.5vw,28px);color:var(--mute);font-weight:500}
+.count b{color:var(--ink);font-variant-numeric:tabular-nums}
+ol{list-style:none;padding:0;display:flex;flex-direction:column;gap:1.1vh}
+li{display:flex;align-items:center;gap:1.4vw;background:var(--card);border-radius:20px;box-shadow:var(--shadow);
+  padding:1.5vh 1.6vw;font-size:clamp(22px,2vw,38px);font-weight:600;animation:in .4s both}
+@keyframes in{from{opacity:0;transform:translateY(8px)}}
+.r{flex:none;width:2.1em;height:2.1em;border-radius:50%;display:grid;place-items:center;font:700 .62em/1 var(--round);
+  background:var(--fill);color:var(--mute)}
+li:nth-child(1) .r{background:var(--gold);color:#fff}
+li:nth-child(2) .r{background:var(--silver);color:#fff}
+li:nth-child(3) .r{background:var(--bronze);color:#fff}
+.n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.s{font:700 1em/1 var(--round);font-variant-numeric:tabular-nums;color:var(--accent)}
+.c{font-size:.6em;color:var(--mute);font-weight:500;min-width:3.6em;text-align:right}
+.empty{color:var(--mute);font-size:clamp(18px,1.5vw,28px);padding:4vh 0}
 </style>
 </head>
 <body>
 <section class="join">
-  <h1 id="title">Viktoriin</h1>
+  <div><div class="eyebrow">G1D viktoriin</div><h1 id="title">Viktoriin</h1></div>
   <div id="qr"></div>
-  <p class="url" id="url"></p>
-  <div class="clock" id="clock">5:00</div>
-  <button id="go">Käivita kell</button>
+  <p class="scan"><b>Skaneeri telefoniga</b> · nimi ja hüüdnimi · 5 minutit</p>
+  <div class="timer">
+    <div class="ring" id="ring">
+      <svg viewBox="0 0 100 100"><circle class="bgc" cx="50" cy="50" r="44"/><circle class="fgc" id="arc" cx="50" cy="50" r="44"/></svg>
+      <b id="clock">5:00</b>
+    </div>
+    <button id="go">Käivita kell</button>
+  </div>
 </section>
 <section class="board">
-  <h2>Tabel</h2>
-  <p class="sub" id="played">Ootan tulemusi…</p>
+  <div class="head"><h2>Tabel</h2><span class="count" id="played"></span></div>
   <ol id="list"></ol>
+  <p class="empty" id="empty">Ootan esimesi tulemusi…</p>
 </section>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="config.js"></script>
@@ -47,34 +80,49 @@ button{font:inherit;font-size:1.2rem;font-weight:700;padding:12px 22px;border:0;
 const $ = id => document.getElementById(id);
 const q = new URLSearchParams(location.search).get("q") || "";
 const join = location.href.replace(/tabel\.html.*$/, "") + "?q=" + encodeURIComponent(q);
-$("url").textContent = join;
-new QRCode($("qr"), {text: join, width: 512, height: 512, correctLevel: QRCode.CorrectLevel.M});
-fetch("quizzes/" + encodeURIComponent(q) + ".json").then(r => r.json()).then(d => $("title").textContent = d.title).catch(() => {});
+new QRCode($("qr"), {text: join, width: 600, height: 600, colorDark: "#1c1c1e", colorLight: "#ffffff",
+                     correctLevel: QRCode.CorrectLevel.M});
+let minutes = 5;
+fetch("quizzes/" + encodeURIComponent(q) + ".json").then(r => r.json())
+  .then(d => { $("title").textContent = d.title; minutes = d.minutes || 5; $("clock").textContent = minutes + ":00"; })
+  .catch(() => {});
 
+const C = 2 * Math.PI * 44;
+$("arc").style.strokeDasharray = C; $("arc").style.strokeDashoffset = 0;
 let end = 0, t;
 $("go").onclick = () => {
-  end = Date.now() + 5 * 60000; clearInterval(t);
-  t = setInterval(() => {
-    const s = Math.max(0, Math.ceil((end - Date.now()) / 1000));
+  end = Date.now() + minutes * 60000; clearInterval(t);
+  $("go").textContent = "Alusta uuesti"; $("go").className = "ghost";
+  const step = () => {
+    const left = Math.max(0, end - Date.now()), s = Math.ceil(left / 1000);
     $("clock").textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
-    if (!s) clearInterval(t);
-  }, 250);
+    $("arc").style.strokeDashoffset = C * (1 - left / (minutes * 60000));
+    $("ring").classList.toggle("warn", s <= 60 && s > 30); $("ring").classList.toggle("low", s <= 30);
+    if (!left) clearInterval(t);
+  };
+  t = setInterval(step, 250); step();
 };
 
+let shown = "";
 async function refresh(){
   const url = (window.VIKTORIIN || {}).scriptUrl;
-  if (!url) { $("played").textContent = "Tulemuste leht pole veel ühendatud (config.js)."; return; }
+  if (!url) { $("empty").textContent = "Tulemuste leht pole veel ühendatud (config.js)."; return; }
   try {
     const d = await (await fetch(url + "?q=" + encodeURIComponent(q), {cache: "no-store"})).json();
-    $("played").textContent = "Mänginud: " + d.played;
+    $("played").innerHTML = "Mänginud <b></b>"; $("played").querySelector("b").textContent = d.played;
+    const top = d.board.slice(0, 8), key = JSON.stringify(top);
+    $("empty").hidden = top.length > 0;
+    if (key === shown) return;                                  // redraw only on change: no flicker
+    shown = key;
     const ol = $("list"); ol.innerHTML = "";
-    d.board.slice(0, 10).forEach((r, i) => {
-      const li = document.createElement("li");
-      li.innerHTML = '<span class="r"></span><span class="n"></span><span class="s"></span>';
-      li.children[0].textContent = i + 1; li.children[1].textContent = r.nick; li.children[2].textContent = r.score;
+    top.forEach((r, i) => {
+      const li = document.createElement("li"); li.style.animationDelay = (i * 40) + "ms";
+      li.innerHTML = '<span class="r"></span><span class="n"></span><span class="c"></span><span class="s"></span>';
+      li.querySelector(".r").textContent = i + 1; li.querySelector(".n").textContent = r.nick;
+      li.querySelector(".c").textContent = r.correct + "/" + r.total; li.querySelector(".s").textContent = r.score;
       ol.appendChild(li);
     });
-  } catch(e) { $("played").textContent = "Tabelit ei saanud laadida, proovin uuesti…"; }
+  } catch(e) { $("empty").hidden = false; $("empty").textContent = "Tabelit ei saanud laadida, proovin uuesti…"; }
 }
 refresh(); setInterval(refresh, 5000);
 </script>
