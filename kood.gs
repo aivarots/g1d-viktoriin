@@ -35,10 +35,54 @@ function key_() {
   return String(sh.getRange("B1").getValue()).trim();
 }
 
-// Run once from the editor (Run ▸ seadista): asks for permissions, makes both tabs, shows the key.
+// Test dates in "Seaded" (Aivar can change them): games before KT1 count for KT1, games from KT1 up
+// to KT2 for KT2. Lessons "test" and "proov" never count.
+const TESTS = [["KT1 kuupäev", new Date(2026, 10, 24)], ["KT2 kuupäev", new Date(2026, 11, 15)]];
+const NOT_COUNTED = ["test", "proov"];
+const BONUS_MIN = 4, BONUS_EACH = 3, BONUS_MAX = 15;   // Aivar 4.11.2026: +3 per game with ≥ 4/6, max +15
+
+function dates_() {
+  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Seaded") || (key_(), SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Seaded"));
+  TESTS.forEach(([label, d], i) => {
+    const r = sh.getRange(i + 2, 1, 1, 2);
+    if (!r.getValues()[0][0]) r.setValues([[label, d]]);
+  });
+  return TESTS.map((_, i) => new Date(sh.getRange(i + 2, 2).getValue()));
+}
+
+// "Kokkuvõte": one row per student (by name), games and test bonus per KT block, all points.
+// Rebuilt after every saved game, and by hand with Run ▸ kokkuvote.
+function kokkuvote() {
+  const [kt1, kt2] = dates_();
+  const rows = sheet_().getDataRange().getValues().slice(1).filter(r => r[2] && !NOT_COUNTED.includes(r[1]));
+  const by = {};
+  rows.forEach(r => {
+    const k = String(r[2]).trim().toLowerCase();
+    const s = by[k] || (by[k] = {name: String(r[2]).trim(), n: [0, 0], good: [0, 0], points: 0});
+    const t = new Date(r[0]), block = t < kt1 ? 0 : t < kt2 ? 1 : -1;
+    s.points += Number(r[4]) || 0;
+    if (block < 0) return;
+    s.n[block]++;
+    if (Number(r[5]) >= BONUS_MIN) s.good[block]++;
+  });
+  const bonus = g => Math.min(BONUS_MAX, BONUS_EACH * g);
+  const out = Object.values(by).sort((a, b) => a.name.localeCompare(b.name, "et"))
+    .map(s => [s.name, s.n[0], s.good[0], bonus(s.good[0]), s.n[1], s.good[1], bonus(s.good[1]), s.points]);
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ss.getSheetByName("Kokkuvõte") || ss.insertSheet("Kokkuvõte");
+  sh.clearContents();
+  sh.getRange(1, 1, 1, 8).setValues([["Nimi", "KT1: mänge", "KT1: ≥ 4/6", "KT1 boonus", "KT2: mänge", "KT2: ≥ 4/6", "KT2 boonus", "Punktid kokku"]])
+    .setFontWeight("bold");
+  sh.setFrozenRows(1);
+  if (out.length) sh.getRange(2, 1, out.length, 8).setValues(out);
+}
+
+// Run once from the editor (Run ▸ seadista): asks for permissions, makes the tabs, shows the key.
 function seadista() {
   sheet_();
   const k = key_();
+  dates_();
+  kokkuvote();
   Logger.log("Valmis. Õpetaja võti: " + k + " (sama on lehel Seaded, lahter B1)");
   return k;
 }
@@ -77,6 +121,7 @@ function doPost(e) {
     const num = (v, lo, hi) => Math.max(lo, Math.min(hi, Math.round(Number(v) || 0)));
     sh.appendRow([new Date(), lesson, name, nick, num(d.score, 0, 10000), num(d.correct, 0, 50),
                   num(d.total, 0, 50), num(d.seconds, 0, 3600), d.timeout ? "jah" : ""]);
+    try { kokkuvote(); } catch (err) {}             // the summary must never cost a saved result
     return out_({ok: true});
   } catch (err) {
     return out_({ok: false, error: String(err)});
