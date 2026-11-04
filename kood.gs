@@ -77,6 +77,20 @@ function kokkuvote() {
   if (out.length) sh.getRange(2, 1, out.length, 8).setValues(out);
 }
 
+// One student's bonus in the current KT block, sent back after a saved game so the phone can show it.
+function bonusFor_(name) {
+  const [kt1, kt2] = dates_(), now = new Date();
+  const block = now < kt1 ? 0 : now < kt2 ? 1 : -1;
+  if (block < 0) return null;
+  const k = String(name).trim().toLowerCase();
+  const good = sheet_().getDataRange().getValues().slice(1).filter(r => {
+    const t = new Date(r[0]);
+    return String(r[2]).trim().toLowerCase() === k && !NOT_COUNTED.includes(r[1]) &&
+           (block === 0 ? t < kt1 : t >= kt1 && t < kt2) && Number(r[5]) >= BONUS_MIN;
+  }).length;
+  return {test: block === 0 ? "KT1" : "KT2", good: good, bonus: Math.min(BONUS_MAX, BONUS_EACH * good), max: BONUS_MAX};
+}
+
 // Run once from the editor (Run ▸ seadista): asks for permissions, makes the tabs, shows the key.
 function seadista() {
   sheet_();
@@ -117,12 +131,14 @@ function doPost(e) {
     const sh = sheet_();
     const rows = sh.getDataRange().getValues().slice(1);
     const k = name.toLowerCase();
-    if (rows.some(r => r[1] === lesson && String(r[2]).toLowerCase() === k)) return out_({ok: true, duplicate: true});
+    if (rows.some(r => r[1] === lesson && String(r[2]).toLowerCase() === k)) return out_({ok: true, duplicate: true, me: bonusFor_(name)});
     const num = (v, lo, hi) => Math.max(lo, Math.min(hi, Math.round(Number(v) || 0)));
     sh.appendRow([new Date(), lesson, name, nick, num(d.score, 0, 10000), num(d.correct, 0, 50),
                   num(d.total, 0, 50), num(d.seconds, 0, 3600), d.timeout ? "jah" : ""]);
     try { kokkuvote(); } catch (err) {}             // the summary must never cost a saved result
-    return out_({ok: true});
+    let me = null;
+    try { me = bonusFor_(name); } catch (err) {}
+    return out_({ok: true, me: me});
   } catch (err) {
     return out_({ok: false, error: String(err)});
   } finally {

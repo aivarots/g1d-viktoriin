@@ -1,106 +1,8 @@
 {
- "id": "m2-tund-2-3",
- "title": "Lineaar- ja ruutvõrrand",
+ "id": "m2-tund-3",
+ "title": "Ruutvõrrand",
  "minutes": 5,
  "questions": [
-  {
-   "variants": [
-    {
-     "q": "Mitu lahendit on võrrandil 3(x − 2) = 3x + 1?",
-     "options": [
-      "lahendid puuduvad",
-      "x = 7",
-      "x = 0",
-      "lõpmata palju"
-     ],
-     "why": [
-      "",
-      "0x = 7 ei anna x = 7: nulliga jagada ei saa.",
-      "0x = 7 ei anna x = 0: ükski x ei sobi.",
-      "Lõpmata palju oleks siis, kui jääks 0 = 0."
-     ]
-    },
-    {
-     "q": "Mitu lahendit on võrrandil 2(x − 5) = 2x + 3?",
-     "options": [
-      "lahendid puuduvad",
-      "x = 13",
-      "x = 0",
-      "lõpmata palju"
-     ],
-     "why": [
-      "",
-      "0x = 13 ei anna x = 13: nulliga jagada ei saa.",
-      "0x = 13 ei anna x = 0: ükski x ei sobi.",
-      "Lõpmata palju oleks siis, kui jääks 0 = 0."
-     ]
-    },
-    {
-     "q": "Mitu lahendit on võrrandil 4(x − 1) = 4x + 2?",
-     "options": [
-      "lahendid puuduvad",
-      "x = 6",
-      "x = 0",
-      "lõpmata palju"
-     ],
-     "why": [
-      "",
-      "0x = 6 ei anna x = 6: nulliga jagada ei saa.",
-      "0x = 6 ei anna x = 0: ükski x ei sobi.",
-      "Lõpmata palju oleks siis, kui jääks 0 = 0."
-     ]
-    }
-   ]
-  },
-  {
-   "variants": [
-    {
-     "q": "Lineaarvõrrandi kuju on ax + b = 0. Milline tingimus kehtib?",
-     "options": [
-      "a ≠ 0",
-      "b ≠ 0",
-      "a > 0",
-      "x ≠ 0"
-     ],
-     "why": [
-      "",
-      "b võib olla ka 0. Tingimus on lineaarliikme kordajal a.",
-      "a võib olla ka negatiivne, ta ei tohi olla null.",
-      "Tingimus on kordajal a, mitte tundmatul x."
-     ]
-    },
-    {
-     "q": "Ruutvõrrandi kuju on ax² + bx + c = 0. Milline tingimus kehtib?",
-     "options": [
-      "a ≠ 0",
-      "b ≠ 0",
-      "c ≠ 0",
-      "a > 0"
-     ],
-     "why": [
-      "",
-      "b võib olla 0, siis on ruutvõrrand mittetäielik.",
-      "c võib olla 0, siis on ruutvõrrand mittetäielik.",
-      "a võib olla ka negatiivne, ta ei tohi olla null."
-     ]
-    },
-    {
-     "q": "Millal on ruutvõrrand mittetäielik?",
-     "options": [
-      "kui b = 0 või c = 0",
-      "kui a = 0",
-      "kui D < 0",
-      "kui b = 0 ja c = 0"
-     ],
-     "why": [
-      "",
-      "Kui a = 0, ei ole see üldse ruutvõrrand.",
-      "D < 0 tähendab, et lahendid puuduvad. See on teine asi.",
-      "Piisab ühest: b = 0 või c = 0."
-     ]
-    }
-   ]
-  },
   {
    "variants": [
     {
@@ -202,6 +104,55 @@
   {
    "variants": [
     {
+     "q": "(x − 3)(x + 5) = 0. Mis on lahendid?",
+     "options": [
+      "x = −5 või x = 3",
+      "x = −3 või x = 5",
+      "x = 3 või x = 5",
+      "x = 0"
+     ],
+     "why": [
+      "",
+      "x − 3 = 0 annab x = 3, mitte −3.",
+      "x + 5 = 0 annab x = −5.",
+      "Null peab olema üks TEGUR, mitte x."
+     ]
+    },
+    {
+     "q": "(x − 2)(x + 7) = 0. Mis on lahendid?",
+     "options": [
+      "x = −7 või x = 2",
+      "x = −2 või x = 7",
+      "x = 2 või x = 7",
+      "x = 0"
+     ],
+     "why": [
+      "",
+      "x − 2 = 0 annab x = 2, mitte −2.",
+      "x + 7 = 0 annab x = −7.",
+      "Null peab olema üks TEGUR, mitte x."
+     ]
+    },
+    {
+     "q": "(x − 4)(x + 1) = 0. Mis on lahendid?",
+     "options": [
+      "x = −1 või x = 4",
+      "x = −4 või x = 1",
+      "x = 1 või x = 4",
+      "x = 0"
+     ],
+     "why": [
+      "",
+      "x − 4 = 0 annab x = 4, mitte −4.",
+      "x + 1 = 0 annab x = −1.",
+      "Null peab olema üks TEGUR, mitte x."
+     ]
+    }
+   ]
+  },
+  {
+   "variants": [
+    {
      "q": "Arvutage diskriminant D, kui x² − 4x + 5 = 0.",
      "options": [
       "D = −4",
@@ -293,6 +244,55 @@
       "Märk on vale, valemis on miinus.",
       "Järjekord on vale. Õige on b² − 4ac.",
       "See on lahendivalem, D on selle juure all."
+     ]
+    }
+   ]
+  },
+  {
+   "variants": [
+    {
+     "q": "Ruutvõrrandi kuju on ax² + bx + c = 0. Milline tingimus kehtib?",
+     "options": [
+      "a ≠ 0",
+      "b ≠ 0",
+      "c ≠ 0",
+      "a > 0"
+     ],
+     "why": [
+      "",
+      "b võib olla 0, siis on ruutvõrrand mittetäielik.",
+      "c võib olla 0, siis on ruutvõrrand mittetäielik.",
+      "a võib olla ka negatiivne, ta ei tohi olla null."
+     ]
+    },
+    {
+     "q": "Millal on ruutvõrrand mittetäielik?",
+     "options": [
+      "kui b = 0 või c = 0",
+      "kui a = 0",
+      "kui D < 0",
+      "kui b = 0 ja c = 0"
+     ],
+     "why": [
+      "",
+      "Kui a = 0, ei ole see üldse ruutvõrrand.",
+      "D < 0 tähendab, et lahendid puuduvad. See on teine asi.",
+      "Piisab ühest, b = 0 või c = 0."
+     ]
+    },
+    {
+     "q": "Milline on ruutvõrrandi lahendivalem?",
+     "options": [
+      "x = (−b ± √D)/2a",
+      "x = (b ± √D)/2a",
+      "x = (−b ± √D)/a",
+      "x = −b ± √D/2a"
+     ],
+     "why": [
+      "",
+      "Lugejas on −b.",
+      "Nimetajas on 2a.",
+      "Kogu lugeja jagatakse 2a-ga."
      ]
     }
    ]

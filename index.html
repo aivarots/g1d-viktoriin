@@ -376,9 +376,9 @@ function status(kind, title, text){
 async function save(){
   status("wait", "Salvestan…"); $("retry").hidden = true;
   try {
-    await send(result);
-    status("ok", "Tulemus on salvestatud", "Võid tunnist lahkuda.");
-    store.set("viktoriin-saved-" + quizId, true);
+    const j = await send(result);
+    store.set("viktoriin-saved-" + quizId, j.me || true);
+    status("ok", "Tulemus on salvestatud", progress(j.me) + "Võid tunnist lahkuda.");
   } catch(e) {
     if (e.message === "closed" || e.message === "not open") {
       status("bad", "Tunnikontroll oli juba suletud", "Seda tulemust ei saa enam salvestada.");
@@ -389,6 +389,15 @@ async function save(){
     const p = store.get("viktoriin-pending") || [];
     if (!p.some(r => r.lesson === result.lesson && r.name === result.name)) { p.push(result); store.set("viktoriin-pending", p); }
   }
+}
+
+// The student's own test bonus (Aivar 4.11.2026: +3 for each tunnikontroll with at least 4 of 6
+// correct, up to +15 per test). Shown on the phone so that the lower group sees its own progress too.
+function progress(me){
+  const got = result.correct >= 4;
+  let t = got ? "See tunnikontroll andis +3. " : "Järgmine kord annab vähemalt 4 õiget +3 punkti. ";
+  if (me && me.test) t += me.test + " boonus on " + (got ? "nüüd " : "") + me.bonus + " / " + me.max + " punkti. ";
+  return t;
 }
 
 function countUp(el, to){
@@ -404,7 +413,8 @@ function showEnd(r, again){
   if (again) $("endScore").textContent = r.score; else countUp($("endScore"), r.score);
   $("chipOk").textContent = r.correct + " / " + r.total + " õiget";
   $("chipNick").textContent = r.nick;
-  if (again && store.get("viktoriin-saved-" + quizId)) status("ok", "Tulemus on salvestatud", "Võid tunnist lahkuda.");
+  const saved = store.get("viktoriin-saved-" + quizId);
+  if (again && saved) status("ok", "Tulemus on salvestatud", progress(saved === true ? null : saved) + "Võid tunnist lahkuda.");
   else save();
 }
 
