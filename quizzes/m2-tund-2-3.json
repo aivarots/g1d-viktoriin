@@ -55,48 +55,48 @@
   {
    "variants": [
     {
-     "q": "Lahendage (x + 1)/3 − (x − 2)/6 = 2.",
+     "q": "Lineaarvõrrandi kuju on ax + b = 0. Milline tingimus kehtib?",
      "options": [
-      "x = 8",
-      "x = 12",
-      "x = −2",
-      "x = 2"
+      "a ≠ 0",
+      "b ≠ 0",
+      "a > 0",
+      "x ≠ 0"
      ],
      "why": [
       "",
-      "Miinus murru ees muudab märgid, −(x − 2) = −x + 2.",
-      "Korruta iga liiget, ka paremat poolt, seega 2 · 6 = 12.",
-      "Kaks viga: miinus murru ees ja parem pool korrutamata."
+      "b võib olla ka 0. Tingimus on lineaarliikme kordajal a.",
+      "a võib olla ka negatiivne, ta ei tohi olla null.",
+      "Tingimus on kordajal a, mitte tundmatul x."
      ]
     },
     {
-     "q": "Lahendage (x + 2)/3 − (x − 1)/6 = 3.",
+     "q": "Ruutvõrrandi kuju on ax² + bx + c = 0. Milline tingimus kehtib?",
      "options": [
-      "x = 13",
-      "x = 15",
-      "x = −2",
-      "x = 0"
+      "a ≠ 0",
+      "b ≠ 0",
+      "c ≠ 0",
+      "a > 0"
      ],
      "why": [
       "",
-      "Miinus murru ees muudab märgid, −(x − 1) = −x + 1.",
-      "Korruta iga liiget, ka paremat poolt, seega 3 · 6 = 18.",
-      "Kaks viga: miinus murru ees ja parem pool korrutamata."
+      "b võib olla 0, siis on ruutvõrrand mittetäielik.",
+      "c võib olla 0, siis on ruutvõrrand mittetäielik.",
+      "a võib olla ka negatiivne, ta ei tohi olla null."
      ]
     },
     {
-     "q": "Lahendage (x + 1)/3 − (x − 4)/6 = 2.",
+     "q": "Millal on ruutvõrrand mittetäielik?",
      "options": [
-      "x = 6",
-      "x = 14",
-      "x = −4",
-      "x = 4"
+      "kui b = 0 või c = 0",
+      "kui a = 0",
+      "kui D < 0",
+      "kui b = 0 ja c = 0"
      ],
      "why": [
       "",
-      "Miinus murru ees muudab märgid, −(x − 4) = −x + 4.",
-      "Korruta iga liiget, ka paremat poolt, seega 2 · 6 = 12.",
-      "Kaks viga: miinus murru ees ja parem pool korrutamata."
+      "Kui a = 0, ei ole see üldse ruutvõrrand.",
+      "D < 0 tähendab, et lahendid puuduvad. See on teine asi.",
+      "Piisab ühest: b = 0 või c = 0."
      ]
     }
    ]
@@ -251,48 +251,48 @@
   {
    "variants": [
     {
-     "q": "Lahendage 2x² − 3x − 2 = 0.",
+     "q": "Mida tähendab D < 0?",
      "options": [
-      "x = −0,5 või x = 2",
-      "x = −2 või x = 0,5",
-      "x = −1 või x = 4",
-      "lahendid puuduvad"
+      "reaalarvulised lahendid puuduvad",
+      "kaks võrdset lahendit",
+      "kaks negatiivset lahendit",
+      "üks lahend on 0"
      ],
      "why": [
       "",
-      "Valemis on −b. Siin b = −3, seega −b = 3.",
-      "Nimetajas on 2a = 4, mitte a.",
-      "D = 25 > 0, sest −4ac = 16."
+      "Kaks võrdset lahendit on siis, kui D = 0.",
+      "D märk ei ütle lahendite märki. D < 0 korral lahendeid pole.",
+      "Lahend 0 tuleb siis, kui c = 0."
      ]
     },
     {
-     "q": "Lahendage 2x² − x − 3 = 0.",
+     "q": "Ruutvõrrandil on kaks võrdset lahendit. Milline on D?",
      "options": [
-      "x = −1 või x = 1,5",
-      "x = −1,5 või x = 1",
-      "x = −2 või x = 3",
-      "lahendid puuduvad"
+      "D = 0",
+      "D > 0",
+      "D < 0",
+      "D = 1"
      ],
      "why": [
       "",
-      "Valemis on −b. Siin b = −1, seega −b = 1.",
-      "Nimetajas on 2a = 4, mitte a.",
-      "D = 25 > 0, sest −4ac = 24."
+      "D > 0 korral on kaks erinevat lahendit.",
+      "D < 0 korral reaalarvulised lahendid puuduvad.",
+      "Siis √D = 1 ja ± annab kaks erinevat lahendit."
      ]
     },
     {
-     "q": "Lahendage 2x² + x − 6 = 0.",
+     "q": "Mis on ruutvõrrandi ax² + bx + c = 0 diskriminant?",
      "options": [
-      "x = −2 või x = 1,5",
-      "x = −1,5 või x = 2",
-      "x = −4 või x = 3",
-      "lahendid puuduvad"
+      "D = b² − 4ac",
+      "D = b² + 4ac",
+      "D = 4ac − b²",
+      "D = (−b ± √D)/2a"
      ],
      "why": [
       "",
-      "Valemis on −b. Siin b = 1, seega −b = −1.",
-      "Nimetajas on 2a = 4, mitte a.",
-      "D = 49 > 0, sest −4ac = 48."
+      "Märk on vale, valemis on miinus.",
+      "Järjekord on vale. Õige on b² − 4ac.",
+      "See on lahendivalem, D on selle juure all."
      ]
     }
    ]
