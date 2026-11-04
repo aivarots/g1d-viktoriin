@@ -209,6 +209,16 @@ const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { c
 const icon = (id) => '<svg viewBox="0 0 24 24"><use href="#' + id + '"/></svg>';
 const C = 2 * Math.PI * 25;                                   // timer ring circumference
 let quiz, order, idx = 0, score = 0, correct = 0, deadline, tick, qStart, done = false, result;
+// shared deadline (Aivar 4.11.2026): the teacher opens the quiz on the projector page and everyone's
+// game ends at the same moment; with no score sheet connected, each phone has its own 5 minutes
+let until = null, gatePoll;
+const hasSheet = () => !!(window.VIKTORIIN || {}).scriptUrl;
+async function state(){
+  const t0 = Date.now();
+  const d = await (await fetch((window.VIKTORIIN || {}).scriptUrl + "?q=" + encodeURIComponent(quizId), {cache: "no-store"})).json();
+  const offset = d.now - (t0 + Date.now()) / 2;               // phone clock vs server clock
+  return d.until ? d.until - offset : 0;
+}
 
 async function send(r){
   const url = (window.VIKTORIIN || {}).scriptUrl;
@@ -221,7 +231,7 @@ async function send(r){
 async function flushPending(){
   const p = store.get("viktoriin-pending") || [];
   const left = [];
-  for (const r of p) { try { await send(r); } catch(e){ left.push(r); } }
+  for (const r of p) { try { await send(r); } catch(e){ if (e.message !== "closed" && e.message !== "not open") left.push(r); } }
   store.set("viktoriin-pending", left);
 }
 
@@ -242,8 +252,22 @@ async function load(){
   if (prev) { showEnd(prev, true); return; }
   const run = store.get("viktoriin-run-" + quizId);       // reloaded mid-game: same questions, same clock
   if (run) { resume(run); return; }
-  const check = () => { $("go").disabled = !($("name").value.trim().length >= 3 && $("nick").value.trim().length >= 2); };
+  const filled = () => $("name").value.trim().length >= 3 && $("nick").value.trim().length >= 2;
+  const open = () => !hasSheet() || (until && until > Date.now() + 5000);
+  const check = () => { $("go").disabled = !(filled() && open()); };
   $("name").oninput = $("nick").oninput = check; check();
+  if (!hasSheet()) return;
+  const meta = quiz.questions.length + " küsimust · " + quiz.minutes + " minutit";
+  const poll = async () => {
+    try { until = await state(); } catch(e) { return; }
+    if (until > Date.now() + 5000) {
+      const s = Math.ceil((until - Date.now()) / 1000);
+      $("meta").textContent = meta + " · avatud, sulgub " + Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+    } else if (until) $("meta").textContent = "Tunnikontroll on suletud.";
+    else $("meta").textContent = meta + " · oota, kuni õpetaja tunnikontrolli avab.";
+    check();
+  };
+  poll(); gatePoll = setInterval(poll, 3000);
 }
 
 function start(){
@@ -252,7 +276,8 @@ function start(){
   // one version per question (other numbers for the neighbour), then question order shuffled
   quiz.questions = quiz.questions.map(q => q.variants ? q.variants[Math.floor(Math.random() * q.variants.length)] : q);
   order = shuffle(quiz.questions.map((q, i) => i));
-  deadline = Date.now() + quiz.minutes * 60000;
+  clearInterval(gatePoll);
+  deadline = hasSheet() && until ? until : Date.now() + quiz.minutes * 60000;
   resume({questions: quiz.questions, order, deadline, idx: 0, score: 0, correct: 0, marks: []});
 }
 
@@ -355,6 +380,10 @@ async function save(){
     status("ok", "Tulemus on salvestatud", "Võid tunnist lahkuda.");
     store.set("viktoriin-saved-" + quizId, true);
   } catch(e) {
+    if (e.message === "closed" || e.message === "not open") {
+      status("bad", "Tunnikontroll oli juba suletud", "Seda tulemust ei saa enam salvestada.");
+      return;
+    }
     status("bad", "Salvestamine ei õnnestunud", "Näita seda ekraani õpetajale. Tulemus saadetakse uuesti, kui avad tunnikontrolli järgmine kord.");
     $("retry").hidden = false;
     const p = store.get("viktoriin-pending") || [];

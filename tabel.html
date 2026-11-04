@@ -57,6 +57,10 @@ li:nth-child(3) .r{background:var(--bronze);color:#fff}
 .plus.on{visibility:visible}
 .key{display:flex;align-items:center;gap:.6em;font-size:clamp(16px,1.3vw,24px);color:var(--mute);margin:-1vh 0 2vh}
 .key .plus{font-size:.8em}
+.ctl{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.ctl input{font:inherit;font-size:clamp(14px,1vw,18px);padding:.6em .8em;border:1.5px solid rgba(60,60,67,.25);border-radius:12px;width:15em}
+.hint{font-size:clamp(14px,1.05vw,20px);color:var(--mute);font-weight:500}
+[hidden]{display:none!important}
 .empty{color:var(--mute);font-size:clamp(18px,1.5vw,28px);padding:4vh 0}
 </style>
 </head>
@@ -66,11 +70,15 @@ li:nth-child(3) .r{background:var(--bronze);color:#fff}
   <div id="qr"></div>
   <p class="scan"><b>Skaneeri telefoniga</b> · 5 minutit</p>
   <div class="timer">
-    <div class="ring" id="ring">
+    <div class="ring" id="ring" hidden>
       <svg viewBox="0 0 100 100"><circle class="bgc" cx="50" cy="50" r="44"/><circle class="fgc" id="arc" cx="50" cy="50" r="44"/></svg>
       <b id="clock">5:00</b>
     </div>
-    <button id="go">Käivita kell</button>
+    <div class="ctl">
+      <input id="key" placeholder="Õpetaja võti (lehel Seaded)" hidden>
+      <button id="go">Ava tunnikontroll</button>
+      <span class="hint" id="hint"></span>
+    </div>
   </div>
 </section>
 <section class="board">
@@ -92,20 +100,36 @@ fetch("quizzes/" + encodeURIComponent(q) + ".json").then(r => r.json())
   .then(d => { $("title").textContent = d.title; minutes = d.minutes || 5; $("clock").textContent = minutes + ":00"; })
   .catch(() => {});
 
+// The shared deadline (Aivar 4.11.2026): "Ava tunnikontroll" opens the quiz for everyone for
+// `minutes`; the ring shows the time left on the server, which is the time left on every phone.
 const C = 2 * Math.PI * 44;
 $("arc").style.strokeDasharray = C; $("arc").style.strokeDashoffset = 0;
-let end = 0, t;
-$("go").onclick = () => {
-  end = Date.now() + minutes * 60000; clearInterval(t);
-  $("go").textContent = "Alusta uuesti"; $("go").className = "ghost";
-  const step = () => {
-    const left = Math.max(0, end - Date.now()), s = Math.ceil(left / 1000);
-    $("clock").textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
-    $("arc").style.strokeDashoffset = C * (1 - left / (minutes * 60000));
-    $("ring").classList.toggle("warn", s <= 60 && s > 30); $("ring").classList.toggle("low", s <= 30);
-    if (!left) clearInterval(t);
-  };
-  t = setInterval(step, 250); step();
+let until = 0, offset = 0, t;
+const keyStore = {get(){ try { return localStorage.getItem("tunnikontroll-key") || ""; } catch(e){ return ""; } },
+                  set(v){ try { localStorage.setItem("tunnikontroll-key", v); } catch(e){} }};
+if (!keyStore.get()) $("key").hidden = false;
+function draw(){
+  const left = Math.max(0, until - (Date.now() + offset)), s = Math.ceil(left / 1000);
+  const open = left > 0;
+  $("ring").hidden = !until;
+  $("clock").textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+  $("arc").style.strokeDashoffset = C * (1 - Math.min(1, left / (minutes * 60000)));
+  $("ring").classList.toggle("warn", s <= 60 && s > 30); $("ring").classList.toggle("low", s <= 30);
+  $("go").hidden = open;
+  $("hint").textContent = open ? "Avatud kõigile" : (until ? "Suletud" : "");
+}
+function sync(d){ if (d && d.now) { offset = d.now - Date.now(); until = d.until || 0; } clearInterval(t); t = setInterval(draw, 250); draw(); }
+$("go").onclick = async () => {
+  const url = (window.VIKTORIIN || {}).scriptUrl;
+  if (!url) { $("hint").textContent = "Tulemuste leht pole veel ühendatud."; return; }
+  const key = $("key").hidden ? keyStore.get() : $("key").value.trim();
+  $("go").disabled = true;
+  try {
+    const d = await (await fetch(url, {method: "POST", body: JSON.stringify({action: "open", lesson: q, key, minutes})})).json();
+    if (!d.ok) { $("key").hidden = false; $("hint").textContent = d.error === "wrong key" ? "Vale võti." : "Ei õnnestunud avada."; return; }
+    keyStore.set(key); $("key").hidden = true; sync(d);
+  } catch(e) { $("hint").textContent = "Ei õnnestunud avada. Kontrolli internetti."; }
+  finally { $("go").disabled = false; }
 };
 
 let shown = "";
@@ -115,6 +139,7 @@ async function refresh(){
   if (!url) { $("empty").textContent = "Tulemuste leht pole veel ühendatud (config.js)."; return; }
   try {
     const d = await (await fetch(url + "?q=" + encodeURIComponent(q), {cache: "no-store"})).json();
+    if (d.until !== undefined && !(until && Math.abs(d.until - until) < 1000)) sync(d);
     $("played").innerHTML = "Mänginud <b></b>"; $("played").querySelector("b").textContent = d.played;
     const top = d.board.slice(0, 8), key = JSON.stringify(top);
     $("empty").hidden = top.length > 0;
