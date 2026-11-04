@@ -35,6 +35,14 @@ function key_() {
   return String(sh.getRange("B1").getValue()).trim();
 }
 
+// Run once from the editor (Run ▸ seadista): asks for permissions, makes both tabs, shows the key.
+function seadista() {
+  sheet_();
+  const k = key_();
+  Logger.log("Valmis. Õpetaja võti: " + k + " (sama on lehel Seaded, lahter B1)");
+  return k;
+}
+
 const until_ = lesson => Number(PropertiesService.getScriptProperties().getProperty("until_" + lesson) || 0);
 
 function out_(obj) {
