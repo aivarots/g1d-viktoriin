@@ -137,6 +137,7 @@ h1{font-size:34px;line-height:1.1;font-weight:700;letter-spacing:-.02em;margin-t
 @keyframes spin{to{transform:rotate(360deg)}}
 .endbtn{display:flex;flex-direction:column;gap:10px;margin-top:12px;width:100%}
 .err{color:var(--bad);margin-top:12px}
+.away{font-size:14px;font-weight:600;color:var(--warn);margin:-4px 4px 12px}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -161,6 +162,7 @@ h1{font-size:34px;line-height:1.1;font-weight:700;letter-spacing:-.02em;margin-t
         <input id="nick" autocomplete="off" maxlength="20"></label>
     </div>
     <p class="foot" id="rule"></p>
+    <p class="foot" id="awayRule">Kui lahkud mängu ajal lehelt või vahetad äppi, näeb õpetaja seda.</p>
     <div class="spacer"></div>
     <button class="primary" id="go" disabled>Alusta</button>
   </section>
@@ -175,6 +177,7 @@ h1{font-size:34px;line-height:1.1;font-weight:700;letter-spacing:-.02em;margin-t
       <div class="pts"><small>Punktid</small><b id="score">0</b></div>
     </div>
     <div class="qcard"><div class="qnum" id="qnum"></div><div class="qtext" id="q"></div></div>
+    <p class="away" id="away" hidden></p>
     <div class="opts" id="opts"></div>
     <div class="pad"></div>
   </section>
@@ -209,6 +212,9 @@ const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { c
 const icon = (id) => '<svg viewBox="0 0 24 24"><use href="#' + id + '"/></svg>';
 const C = 2 * Math.PI * 25;                                   // timer ring circumference
 let quiz, order, idx = 0, score = 0, correct = 0, deadline, tick, qStart, done = false, result;
+// Leaving the page during the game (Aivar 6.11.2026, against screenshot → chatbot): how many times the
+// page went to the background and for how long. Only Aivar sees it, in the sheet; no automatic penalty.
+let away = 0, awayMs = 0, hiddenAt = null;
 // shared deadline (Aivar 4.11.2026): the teacher opens the quiz on the projector page and everyone's
 // game ends at the same moment; with no score sheet connected, each phone has its own 5 minutes
 let until = null, gatePoll;
@@ -283,17 +289,18 @@ function start(){
   order = shuffle(quiz.questions.map((q, i) => i));
   clearInterval(gatePoll);
   deadline = hasSheet() && until ? until : Date.now() + quiz.minutes * 60000;
-  resume({questions: quiz.questions, order, deadline, idx: 0, score: 0, correct: 0, marks: []});
+  resume({questions: quiz.questions, order, deadline, idx: 0, score: 0, correct: 0, marks: [], away: 0, awayMs: 0});
 }
 
 function persist(marks, at = idx){
-  store.set("viktoriin-run-" + quizId, {questions: quiz.questions, order, deadline, idx: at, score, correct, marks});
+  store.set("viktoriin-run-" + quizId, {questions: quiz.questions, order, deadline, idx: at, score, correct, marks, away, awayMs});
 }
 const marksNow = () => [...$("steps").children].map(d => d.classList.contains("ok") ? "ok" : d.classList.contains("bad") ? "bad" : "");
 
 function resume(run){
   quiz.questions = run.questions; order = run.order; deadline = run.deadline;
   idx = run.idx; score = run.score; correct = run.correct;
+  away = run.away || 0; awayMs = run.awayMs || 0; showAway();
   $("start").hidden = true; $("game").hidden = false;
   $("steps").innerHTML = order.map((_, i) => '<span class="step ' + (run.marks[i] || "") + '"></span>').join("");
   $("score").textContent = score;
@@ -362,11 +369,14 @@ function answer(oi){
 function next(){ $("sheet").classList.remove("show"); idx++; if (idx < order.length) show(); else finish(false); }
 
 function finish(timeout){
-  if (done) return; done = true; clearInterval(tick);
+  if (done) return;
+  if (hiddenAt) { awayMs += Date.now() - hiddenAt; hiddenAt = null; }
+  done = true; clearInterval(tick);
   $("sheet").classList.remove("show");
   const me = store.get("viktoriin-me") || {};
   result = {lesson: quizId, name: me.name, nick: me.nick, score, correct, total: quiz.questions.length,
-            seconds: Math.round((quiz.minutes * 60000 - Math.max(0, deadline - Date.now())) / 1000), timeout};
+            seconds: Math.round((quiz.minutes * 60000 - Math.max(0, deadline - Date.now())) / 1000), timeout,
+            away, awaySeconds: Math.round(awayMs / 1000)};
   store.set("viktoriin-done-" + quizId, result);
   try { localStorage.removeItem("viktoriin-run-" + quizId); } catch(e) {}
   showEnd(result, false);
@@ -423,6 +433,23 @@ function showEnd(r, again){
   else save();
 }
 
+function showAway(){
+  $("away").hidden = !away;
+  $("away").textContent = "Lahkusid lehelt " + away + "×. Õpetaja näeb seda.";
+}
+const playing = () => !done && !$("game").hidden;
+document.addEventListener("visibilitychange", () => {
+  if (!playing()) return;
+  if (document.visibilityState === "hidden") {
+    if (hiddenAt) return;
+    hiddenAt = Date.now(); away++;
+    persist(marksNow(), $("sheet").classList.contains("show") ? idx + 1 : idx);   // survives a reload
+  } else if (hiddenAt) {
+    awayMs += Date.now() - hiddenAt; hiddenAt = null;
+    persist(marksNow(), $("sheet").classList.contains("show") ? idx + 1 : idx);
+    showAway(); clock();
+  }
+});
 $("go").onclick = start; $("next").onclick = next; $("retry").onclick = save;
 load();
 </script>

@@ -10,18 +10,23 @@
 // public, so the key must never be written here.
 //
 // POST {action: "open", lesson, key, minutes}   open the quiz now, for `minutes` (1–15)
-// POST {lesson, name, nick, score, correct, total, seconds, timeout}   one finished game; only the
-//      first per lesson and name counts, a repeat is answered ok + duplicate
+// POST {lesson, name, nick, score, correct, total, seconds, timeout, away, awaySeconds}   one finished
+//      game; only the first per lesson and name counts, a repeat is answered ok + duplicate.
+//      away / awaySeconds (Aivar 6.11.2026): how often and how long the game page was in the
+//      background — for Aivar to judge case by case, never a penalty by itself
 // GET  ?q=<lesson>   state {now, until} and the leaderboard: nicknames and scores only, never names
 
 const SHEET = "Tulemused";
-const HEAD = ["Aeg", "Tund", "Nimi", "Hüüdnimi", "Punktid", "Õiged", "Küsimusi", "Sekundid", "Aeg otsas"];
+const HEAD = ["Aeg", "Tund", "Nimi", "Hüüdnimi", "Punktid", "Õiged", "Küsimusi", "Sekundid", "Aeg otsas",
+              "Lahkus lehelt", "Eemal (s)"];
 const GRACE = 30000;            // a result may arrive this long after the deadline (slow network)
 
 function sheet_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sh = ss.getSheetByName(SHEET);
   if (!sh) { sh = ss.insertSheet(SHEET); sh.appendRow(HEAD); sh.setFrozenRows(1); }
+  else if (sh.getRange(1, HEAD.length).getValue() !== HEAD[HEAD.length - 1])     // columns added 6.11.2026
+    sh.getRange(1, 1, 1, HEAD.length).setValues([HEAD]);
   return sh;
 }
 
@@ -37,7 +42,7 @@ function key_() {
 
 // Test dates in "Seaded" (Aivar can change them): games before KT1 count for KT1, games from KT1 up
 // to KT2 for KT2. Lessons "test" and "proov" never count.
-const TESTS = [["KT1 kuupäev", new Date(2026, 10, 24)], ["KT2 kuupäev", new Date(2026, 11, 15)]];
+const TESTS = [["KT1 kuupäev", new Date(2026, 10, 17)], ["KT2 kuupäev", new Date(2026, 11, 1)]];
 const NOT_COUNTED = ["test", "proov"];
 const BONUS_MIN = 4, BONUS_EACH = 3, BONUS_MAX = 15;   // Aivar 4.11.2026: +3 per game with ≥ 4/6, max +15
 
@@ -58,23 +63,24 @@ function kokkuvote() {
   const by = {};
   rows.forEach(r => {
     const k = String(r[2]).trim().toLowerCase();
-    const s = by[k] || (by[k] = {name: String(r[2]).trim(), n: [0, 0], good: [0, 0], points: 0});
+    const s = by[k] || (by[k] = {name: String(r[2]).trim(), n: [0, 0], good: [0, 0], points: 0, away: 0});
     const t = new Date(r[0]), block = t < kt1 ? 0 : t < kt2 ? 1 : -1;
     s.points += Number(r[4]) || 0;
+    s.away += Number(r[9]) || 0;
     if (block < 0) return;
     s.n[block]++;
     if (Number(r[5]) >= BONUS_MIN) s.good[block]++;
   });
   const bonus = g => Math.min(BONUS_MAX, BONUS_EACH * g);
   const out = Object.values(by).sort((a, b) => a.name.localeCompare(b.name, "et"))
-    .map(s => [s.name, s.n[0], s.good[0], bonus(s.good[0]), s.n[1], s.good[1], bonus(s.good[1]), s.points]);
+    .map(s => [s.name, s.n[0], s.good[0], bonus(s.good[0]), s.n[1], s.good[1], bonus(s.good[1]), s.points, s.away]);
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sh = ss.getSheetByName("Kokkuvõte") || ss.insertSheet("Kokkuvõte");
   sh.clearContents();
-  sh.getRange(1, 1, 1, 8).setValues([["Nimi", "KT1: mänge", "KT1: ≥ 4/6", "KT1 boonus", "KT2: mänge", "KT2: ≥ 4/6", "KT2 boonus", "Punktid kokku"]])
+  sh.getRange(1, 1, 1, 9).setValues([["Nimi", "KT1: mänge", "KT1: ≥ 4/6", "KT1 boonus", "KT2: mänge", "KT2: ≥ 4/6", "KT2 boonus", "Punktid kokku", "Lahkus lehelt kokku"]])
     .setFontWeight("bold");
   sh.setFrozenRows(1);
-  if (out.length) sh.getRange(2, 1, out.length, 8).setValues(out);
+  if (out.length) sh.getRange(2, 1, out.length, 9).setValues(out);
 }
 
 // One student's bonus in the current KT block, sent back after a saved game so the phone can show it.
@@ -134,7 +140,8 @@ function doPost(e) {
     if (rows.some(r => r[1] === lesson && String(r[2]).toLowerCase() === k)) return out_({ok: true, duplicate: true, me: bonusFor_(name)});
     const num = (v, lo, hi) => Math.max(lo, Math.min(hi, Math.round(Number(v) || 0)));
     sh.appendRow([new Date(), lesson, name, nick, num(d.score, 0, 10000), num(d.correct, 0, 50),
-                  num(d.total, 0, 50), num(d.seconds, 0, 3600), d.timeout ? "jah" : ""]);
+                  num(d.total, 0, 50), num(d.seconds, 0, 3600), d.timeout ? "jah" : "",
+                  d.away == null ? "" : num(d.away, 0, 999), d.awaySeconds == null ? "" : num(d.awaySeconds, 0, 3600)]);
     try { kokkuvote(); } catch (err) {}             // the summary must never cost a saved result
     let me = null;
     try { me = bonusFor_(name); } catch (err) {}
