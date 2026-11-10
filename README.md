@@ -6,6 +6,8 @@ the game and the questions, never names or scores.
 
 - Game: `index.html?q=<quiz id>` (quizzes in `quizzes/`)
 - Projector page with QR code, 5-minute clock and leaderboard: `tabel.html?q=<quiz id>`
+- Self-paced practice from every tunnikontroll held so far: `harjuta.html` (pool in
+  `quizzes/harjutus.json`; nothing is saved, no bonus)
 - `config.js`: the Apps Script web app URL
 
 Source of truth: `teaching-skills/G1D Lai matemaatika/vahendid/viktoriin/` (private repo);
