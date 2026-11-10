@@ -212,6 +212,9 @@ const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { c
 const icon = (id) => '<svg viewBox="0 0 24 24"><use href="#' + id + '"/></svg>';
 const C = 2 * Math.PI * 25;                                   // timer ring circumference
 let quiz, order, idx = 0, score = 0, correct = 0, deadline, tick, qStart, done = false, result;
+// Every pick (Aivar 10.11.2026): [question, version, option picked; 0 = right], sent with the result and
+// stored in the sheet WITHOUT the name, so the next lesson's opener can target the commonest error.
+let picks = [];
 // Leaving the page during the game (Aivar 6.11.2026, against screenshot → chatbot): how many times the
 // page went to the background and for how long. Only Aivar sees it, in the sheet; no automatic penalty.
 let away = 0, awayMs = 0, hiddenAt = null;
@@ -285,22 +288,25 @@ function start(){
   const name = $("name").value.trim(), nick = $("nick").value.trim();
   store.set("viktoriin-me", {name, nick});
   // one version per question (other numbers for the neighbour), then question order shuffled
-  quiz.questions = quiz.questions.map(q => q.variants ? q.variants[Math.floor(Math.random() * q.variants.length)] : q);
+  quiz.questions = quiz.questions.map((q, qi) => {
+    const vi = q.variants ? Math.floor(Math.random() * q.variants.length) : 0;
+    return Object.assign({}, q.variants ? q.variants[vi] : q, {qi, vi});
+  });
   order = shuffle(quiz.questions.map((q, i) => i));
   clearInterval(gatePoll);
   deadline = hasSheet() && until ? until : Date.now() + quiz.minutes * 60000;
-  resume({questions: quiz.questions, order, deadline, idx: 0, score: 0, correct: 0, marks: [], away: 0, awayMs: 0});
+  resume({questions: quiz.questions, order, deadline, idx: 0, score: 0, correct: 0, marks: [], away: 0, awayMs: 0, picks: []});
 }
 
 function persist(marks, at = idx){
-  store.set("viktoriin-run-" + quizId, {questions: quiz.questions, order, deadline, idx: at, score, correct, marks, away, awayMs});
+  store.set("viktoriin-run-" + quizId, {questions: quiz.questions, order, deadline, idx: at, score, correct, marks, away, awayMs, picks});
 }
 const marksNow = () => [...$("steps").children].map(d => d.classList.contains("ok") ? "ok" : d.classList.contains("bad") ? "bad" : "");
 
 function resume(run){
   quiz.questions = run.questions; order = run.order; deadline = run.deadline;
   idx = run.idx; score = run.score; correct = run.correct;
-  away = run.away || 0; awayMs = run.awayMs || 0; showAway();
+  away = run.away || 0; awayMs = run.awayMs || 0; picks = run.picks || []; showAway();
   $("start").hidden = true; $("game").hidden = false;
   $("steps").innerHTML = order.map((_, i) => '<span class="step ' + (run.marks[i] || "") + '"></span>').join("");
   $("score").textContent = score;
@@ -341,6 +347,7 @@ function answer(oi){
   if (done) return;
   const q = quiz.questions[order[idx]], ok = oi === 0;
   const secs = (Date.now() - qStart) / 1000, bonus = ok ? Math.max(0, Math.round(50 - 2 * secs)) : 0;
+  if (q.qi != null) picks.push([q.qi, q.vi, oi]);
   if (ok) { correct++; score += 100 + bonus; $("score").classList.remove("bump"); void $("score").offsetWidth; $("score").classList.add("bump"); }
   $("score").textContent = score;
   [...$("opts").children].forEach(b => {
@@ -376,7 +383,7 @@ function finish(timeout){
   const me = store.get("viktoriin-me") || {};
   result = {lesson: quizId, name: me.name, nick: me.nick, score, correct, total: quiz.questions.length,
             seconds: Math.round((quiz.minutes * 60000 - Math.max(0, deadline - Date.now())) / 1000), timeout,
-            away, awaySeconds: Math.round(awayMs / 1000)};
+            away, awaySeconds: Math.round(awayMs / 1000), picks};
   store.set("viktoriin-done-" + quizId, result);
   try { localStorage.removeItem("viktoriin-run-" + quizId); } catch(e) {}
   showEnd(result, false);

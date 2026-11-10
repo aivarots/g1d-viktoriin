@@ -14,7 +14,11 @@
 //      game; only the first per lesson and name counts, a repeat is answered ok + duplicate.
 //      away / awaySeconds (Aivar 6.11.2026): how often and how long the game page was in the
 //      background — for Aivar to judge case by case, never a penalty by itself
+//      picks (Aivar 10.11.2026): [[question, version, option], …], option 0 = right; written to the
+//      "Vastused" tab WITHOUT name or nickname — only for finding the commonest error
 // GET  ?q=<lesson>   state {now, until} and the leaderboard: nicknames and scores only, never names
+// GET  ?stats=<lesson>   once the quiz is closed: counts per [question, version, option], no names
+//      (read by skriptid/tunnikontroll_vead.py for the next lesson's opener)
 
 const SHEET = "Tulemused";
 const HEAD = ["Aeg", "Tund", "Nimi", "Hüüdnimi", "Punktid", "Õiged", "Küsimusi", "Sekundid", "Aeg otsas",
@@ -142,6 +146,7 @@ function doPost(e) {
     sh.appendRow([new Date(), lesson, name, nick, num(d.score, 0, 10000), num(d.correct, 0, 50),
                   num(d.total, 0, 50), num(d.seconds, 0, 3600), d.timeout ? "jah" : "",
                   d.away == null ? "" : num(d.away, 0, 999), d.awaySeconds == null ? "" : num(d.awaySeconds, 0, 3600)]);
+    try { picks_(lesson, d.picks); } catch (err) {} // nor the per-answer record
     try { kokkuvote(); } catch (err) {}             // the summary must never cost a saved result
     let me = null;
     try { me = bonusFor_(name); } catch (err) {}
@@ -153,7 +158,33 @@ function doPost(e) {
   }
 }
 
+const PICKS = "Vastused";
+function picks_(lesson, p) {
+  if (!Array.isArray(p) || !p.length) return;
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sh = ss.getSheetByName(PICKS);
+  if (!sh) { sh = ss.insertSheet(PICKS); sh.appendRow(["Aeg", "Tund", "Küsimus", "Versioon", "Valik (0 = õige)"]); sh.setFrozenRows(1); }
+  const n = v => Math.max(0, Math.min(20, Math.round(Number(v) || 0)));
+  const now = new Date();
+  const rows = p.slice(0, 20).filter(a => Array.isArray(a) && a.length === 3).map(a => [now, lesson, n(a[0]), n(a[1]), n(a[2])]);
+  if (rows.length) sh.getRange(sh.getLastRow() + 1, 1, rows.length, 5).setValues(rows);
+}
+
+function stats_(lesson) {
+  const until = until_(lesson);
+  if (until && Date.now() <= until + GRACE) return out_({ok: false, error: "still open"});
+  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(PICKS);
+  const count = {};
+  if (sh) sh.getDataRange().getValues().slice(1).filter(r => r[1] === lesson).forEach(r => {
+    const k = r[2] + "," + r[3] + "," + r[4]; count[k] = (count[k] || 0) + 1;
+  });
+  const games = sheet_().getDataRange().getValues().slice(1).filter(r => r[1] === lesson).length;
+  return out_({ok: true, lesson: lesson, games: games,
+               picks: Object.keys(count).map(k => k.split(",").map(Number).concat([count[k]]))});
+}
+
 function doGet(e) {
+  if ((e.parameter || {}).stats) return stats_(clean_(e.parameter.stats, 40));
   const lesson = clean_((e.parameter || {}).q, 40);
   const rows = sheet_().getDataRange().getValues().slice(1).filter(r => r[1] === lesson);
   const board = rows.map(r => ({nick: r[3], score: r[4], correct: r[5], total: r[6]}))
