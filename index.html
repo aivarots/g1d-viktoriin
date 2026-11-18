@@ -138,6 +138,16 @@ h1{font-size:34px;line-height:1.1;font-weight:700;letter-spacing:-.02em;margin-t
 .endbtn{display:flex;flex-direction:column;gap:10px;margin-top:12px;width:100%}
 .err{color:var(--bad);margin-top:12px}
 .away{font-size:14px;font-weight:600;color:var(--warn);margin:-4px 4px 12px}
+/* review after the deadline (Aivar 18.11.2026) */
+.rwait{font-size:15px;color:var(--mute);text-align:center;margin-top:18px}
+.review h2{font:700 22px/1.2 var(--round);margin:28px 4px 12px}
+.rv{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;margin-bottom:12px}
+.rv .rq{font-size:18px;font-weight:600;line-height:1.3;margin:4px 0 10px}
+.ra{display:flex;gap:8px;align-items:baseline;font-size:16px;margin-top:4px}
+.ra b{flex:none;font-weight:600}
+.ra.ok b{color:var(--ok)}.ra.bad b{color:var(--bad)}.ra.none b{color:var(--mute)}
+.rv .why{margin-top:8px}
+.rx{font-size:16px;margin-top:8px;padding-top:8px;border-top:.5px solid var(--hair)}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -191,6 +201,8 @@ h1{font-size:34px;line-height:1.1;font-weight:700;letter-spacing:-.02em;margin-t
     </div>
     <div class="status wait" id="status"><div class="spin"></div><div><b>Salvestan…</b></div></div>
     <div class="endbtn"><button class="secondary" id="retry" hidden>Proovi uuesti salvestada</button></div>
+    <p class="rwait" id="rwait" hidden></p>
+    <div class="review" id="review" hidden><h2>Vastused ja selgitused</h2><div id="rlist"></div></div>
   </section>
 </main>
 
@@ -385,6 +397,11 @@ function finish(timeout){
             seconds: Math.round((quiz.minutes * 60000 - Math.max(0, deadline - Date.now())) / 1000), timeout,
             away, awaySeconds: Math.round(awayMs / 1000), picks};
   store.set("viktoriin-done-" + quizId, result);
+  store.set("viktoriin-review-" + quizId, {until: deadline, items: order.map(i => {
+    const q = quiz.questions[i], pk = picks.find(p => p[0] === q.qi), oi = pk ? pk[2] : null;
+    return {q: q.q, right: q.options[0], picked: oi == null ? null : q.options[oi],
+            why: oi ? (q.why[oi] || "") : "", explain: q.explain || ""};
+  })});
   try { localStorage.removeItem("viktoriin-run-" + quizId); } catch(e) {}
   showEnd(result, false);
 }
@@ -430,7 +447,7 @@ function countUp(el, to){
 
 function showEnd(r, again){
   result = r;
-  $("start").hidden = true; $("game").hidden = true; $("end").hidden = false;
+  $("start").hidden = true; $("game").hidden = true; $("end").hidden = false; $("sheet").hidden = true;
   $("endTitle").textContent = again ? "Oled juba mänginud" : (r.timeout ? "Aeg sai läbi" : "Valmis!");
   if (again) $("endScore").textContent = r.score; else countUp($("endScore"), r.score);
   $("chipOk").textContent = r.correct + " / " + r.total + " õiget";
@@ -438,6 +455,45 @@ function showEnd(r, again){
   const saved = store.get("viktoriin-saved-" + quizId);
   if (again && saved) status("ok", "Tulemus on salvestatud", progress(saved === true ? null : saved) + "Võid tunnist lahkuda.");
   else save();
+  showReview();
+}
+
+// Every question with the right answer and its explanation (Aivar 18.11.2026). Only after the shared
+// deadline, so a student who finishes early cannot pass the answers to a neighbour who is still playing.
+let reviewTick;
+function showReview(){
+  const r = store.get("viktoriin-review-" + quizId);
+  if (!r) return;                                        // played before this was added
+  clearInterval(reviewTick);
+  const step = () => {
+    const left = r.until - Date.now();
+    if (left > 0) {
+      const s = Math.ceil(left / 1000);
+      $("rwait").hidden = false;
+      $("rwait").textContent = "Kõik vastused ja selgitused ilmuvad siia, kui aeg on läbi (" +
+        Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0") + ").";
+      return;
+    }
+    clearInterval(reviewTick); $("rwait").hidden = true; renderReview(r.items);
+  };
+  step();
+  if (r.until > Date.now()) reviewTick = setInterval(step, 1000);
+}
+function renderReview(items){
+  const list = $("rlist"); list.innerHTML = "";
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  const line = (cls, label, text) => { const d = el("div", "ra " + cls); d.append(el("b", null, label), el("span", null, text)); return d; };
+  items.forEach((it, k) => {
+    const c = el("div", "rv");
+    c.append(el("div", "qnum", "Küsimus " + (k + 1)), el("div", "rq", it.q));
+    if (it.picked == null) c.append(line("none", "Vastamata", ""));
+    else c.append(line(it.picked === it.right ? "ok" : "bad", it.picked === it.right ? "✓ Sinu vastus:" : "✗ Sinu vastus:", it.picked));
+    if (it.picked !== it.right) c.append(line("ok", "Õige vastus:", it.right));
+    if (it.why) c.append(el("p", "why", it.why));
+    if (it.explain) c.append(el("p", "rx", it.explain));
+    list.append(c);
+  });
+  $("review").hidden = false;
 }
 
 function showAway(){
